@@ -1,0 +1,20 @@
+{
+  "name": "web-shared-data-access",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/web/shared/data-access/src",
+  "projectType": "library",
+  "tags": ["scope:web", "type:data-access", "domain:shared"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": [
+          "tsc -p libs/web/shared/data-access/tsconfig.lib.json --noEmit",
+          "tsc -p libs/web/shared/data-access/tsconfig.spec.json --noEmit"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

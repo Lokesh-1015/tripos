@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+
+/* Design tokens live in the shared UI library so every future frontend surface
+   inherits the same scale (CLAUDE.md §13). */
+@import '../../../../libs/shared/ui/src/styles/tokens.css';
+
+/* Tell Tailwind where to scan for class names. Explicit sources are required
+   because the app and its libraries are separate directories in the monorepo —
+   without the libs entries, classes used inside libs/web/** would be stripped
+   from the production build. */
+@source '../../src';
+@source '../../../../libs/web';
+@source '../../../../libs/shared/ui/src';
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    margin: 0;
+  }
+}

@@ -1,0 +1,80 @@
+# Local infrastructure only.
+#
+# Applications run on the host (`pnpm dev`), not in Docker. Containerising the
+# Next dev server destroys hot-reload speed on Windows bind mounts for no
+# benefit — see CLAUDE.md §2. Docker's job here is Postgres, Redis, and a mail
+# catcher.
+#
+#   pnpm db:up     start
+#   pnpm db:down   stop, keeping data
+#   pnpm db:reset  stop and DESTROY all local data
+
+name: tripos
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: tripos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tripos
+      POSTGRES_PASSWORD: tripos
+      POSTGRES_DB: tripos
+      # Deterministic collation, so ORDER BY behaves identically across machines
+      # and in CI. Without this, sort order can differ between a developer's
+      # laptop and production and produce genuinely confusing bugs.
+      POSTGRES_INITDB_ARGS: '--locale=C.UTF-8 --encoding=UTF8'
+    ports:
+      # Host port 55432, deliberately far from the defaults.
+      #
+      # Natively installed PostgreSQL servers commonly occupy 5432 AND 5433 (a
+      # second major version takes the next port). When that happens Docker still
+      # reports the mapping but only actually binds the IPv6 address, so host
+      # connections silently reach the *native* server instead. The symptom is a
+      # baffling "P1000: Authentication failed" while `docker exec psql` works
+      # perfectly. A high port keeps TripOS out of that fight entirely.
+      #
+      # Verify with: Get-NetTCPConnection -LocalPort 55432 -State Listen
+      - '55432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # Without a healthcheck, migrations race the database on a cold start.
+      test: ['CMD-SHELL', 'pg_isready -U tripos -d tripos']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    container_name: tripos-redis
+    restart: unless-stopped
+    # Cache, BullMQ queues, and later the Socket.IO adapter (ADR-0007).
+    # appendonly keeps queued jobs across a restart — losing a queue of pending
+    # notification jobs is a silent data-loss bug.
+    command: redis-server --appendonly yes
+    ports:
+      # 56379 for the same reason Postgres uses 55432: a natively installed
+      # redis-server frequently holds 6379 already.
+      - '56379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    # Catches every outbound email locally so invites and notifications can be
+    # tested without sending real mail to real people. UI at http://localhost:8025
+    image: mailhog/mailhog:latest
+    container_name: tripos-mailhog
+    restart: unless-stopped
+    ports:
+      - '1025:1025' # SMTP
+      - '8025:8025' # web UI
+
+volumes:
+  postgres-data:
+  redis-data:

@@ -1,0 +1,28 @@
+# TripOS uses an integrated Nx layout: one root package.json, with libraries
+# resolved through tsconfig.base.json path aliases rather than workspace packages.
+# See ADR-0001 and CLAUDE.md §3.
+
+# --- Supply chain ---------------------------------------------------------
+# pnpm blocks dependency build (postinstall) scripts by default. Only the
+# packages listed here may run them. Adding an entry is a security decision,
+# not a formality: a build script runs arbitrary code on every install and in
+# CI. Add a package only when its install genuinely needs it, and say why.
+allowBuilds:
+  nx: true # native task-runner bindings
+  esbuild: true # downloads/links the platform binary
+  prisma: true # generates the client from schema.prisma
+  '@prisma/client': true # ditto
+  '@prisma/engines': true # fetches the query engine binary
+  unrs-resolver: true # native resolver bindings used by eslint-plugin-import
+  '@parcel/watcher': true # native watcher for the Nx daemon
+  sharp: true # native image pipeline; required for next/image optimisation
+  less: false # not used — TripOS styles with Tailwind (CLAUDE.md §13)
+  '@swc/core': true # native Rust compiler used by Nx/Next builds
+
+
+# NOTE on `minimumReleaseAgeExclude`: pnpm refuses packages published very
+# recently, because the hours immediately after a publish are when a compromised
+# or hijacked release is most likely to still be live. `pnpm add` will offer to
+# write exclusions here to bypass that gate — do not accept them. Pin a slightly
+# older, already-vetted version instead. That is why oRPC is on 1.14.8 and Next
+# on 16.2.10 rather than the newest patch of each. Keep this list empty.

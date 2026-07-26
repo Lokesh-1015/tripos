@@ -1,0 +1,65 @@
+{
+  "info": {
+    "title": "TripOS API",
+    "version": "0.1.0",
+    "description": "Generated from libs/shared/contracts. Do not edit by hand — run `pnpm api:docs`."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local development"
+    }
+  ],
+  "openapi": "3.1.1",
+  "paths": {
+    "/system/status": {
+      "get": {
+        "operationId": "system.status",
+        "summary": "Report the running API build and environment",
+        "tags": [
+          "system"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "ok"
+                    },
+                    "environment": {
+                      "enum": [
+                        "development",
+                        "test",
+                        "production"
+                      ],
+                      "type": "string"
+                    },
+                    "uptimeSeconds": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "serverTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "environment",
+                    "uptimeSeconds",
+                    "serverTime"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

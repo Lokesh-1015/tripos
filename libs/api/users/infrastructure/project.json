@@ -1,0 +1,17 @@
+{
+  "name": "api-users-infrastructure",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/users/infrastructure/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:infrastructure", "domain:users"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": ["tsc -p libs/api/users/infrastructure/tsconfig.lib.json --noEmit"],
+        "parallel": false
+      }
+    }
+  }
+}

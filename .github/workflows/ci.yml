@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to a PR makes the previous run irrelevant — cancel it rather than
+# burning minutes on a stale commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Deliberately NOT setting NODE_ENV. Next auto-loads env for every command, and
+  # a development NODE_ENV makes `next build` emit a production bundle against
+  # React's development runtime, failing prerender with an opaque null-dispatcher
+  # error. Let the tooling set it. See CLAUDE.md §14.
+  DATABASE_URL: postgresql://tripos:tripos@localhost:5432/tripos?schema=public
+  REDIS_URL: redis://localhost:6379
+
+jobs:
+  verify:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: tripos
+          POSTGRES_PASSWORD: tripos
+          POSTGRES_DB: tripos
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tripos -d tripos"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:8-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # `nx affected` diffs against a base commit, so it needs real history.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # Derives the base/head SHAs `nx affected` compares against, handling both
+      # push and pull_request events correctly.
+      - uses: nrwl/nx-set-shas@v4
+
+      # --frozen-lockfile makes CI fail rather than silently resolving different
+      # versions than a developer has locally. It is also what enforces the
+      # supply-chain policies in pnpm-workspace.yaml.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify formatting
+        run: pnpm format:check
+
+      # Run migrations so integration tests hit a real schema rather than mocks
+      # (CLAUDE.md §12). No-op until the first migration exists.
+      - name: Apply migrations
+        run: pnpm db:deploy
+
+      - name: Lint, typecheck, test, build
+        run: pnpm nx affected -t lint typecheck test build --parallel=3
+
+      # Guards ADR-0001's module boundaries explicitly. A cross-domain import is a
+      # design decision that must go through an ADR, never a silent commit.
+      - name: Check module boundaries on all projects
+        run: pnpm nx run-many -t lint --parallel=3

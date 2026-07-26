@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // Workspace scripts run through tsx (ESM), and they import the oRPC packages
+    // which publish types only via `exports` maps — hence bundler resolution.
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["scripts/**/*.ts"]
+}

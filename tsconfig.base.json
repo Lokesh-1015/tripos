@@ -1,0 +1,38 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "sourceMap": true,
+    "declaration": false,
+    "importHelpers": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "paths": {
+      "@tripos/shared/config": ["./libs/shared/config/src/index.ts"],
+      "@tripos/shared/contracts": ["./libs/shared/contracts/src/index.ts"],
+      "@tripos/shared/database": ["./libs/shared/database/src/index.ts"],
+      "@tripos/web/shared/data-access": ["./libs/web/shared/data-access/src/index.ts"],
+      "@tripos/shared/ui": ["./libs/shared/ui/src/index.ts"],
+      "@tripos/api/shared/database": ["./libs/api/shared/database/src/index.ts"],
+      "@tripos/api/users/domain": ["./libs/api/users/domain/src/index.ts"],
+      "@tripos/api/users/application": ["./libs/api/users/application/src/index.ts"],
+      "@tripos/api/users/infrastructure": ["./libs/api/users/infrastructure/src/index.ts"],
+      "@tripos/api/users/feature": ["./libs/api/users/feature/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

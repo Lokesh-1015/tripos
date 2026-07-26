@@ -1,0 +1,56 @@
+// TripOS database schema.
+//
+// libs/shared/database is the SOLE owner of this file and of the generated
+// client (CLAUDE.md §8). No other library imports @prisma/client directly;
+// repositories in `infrastructure` layers import from this library instead.
+//
+// Conventions enforced here:
+//   - every table carries id / createdAt / updatedAt
+//   - mutable user content also carries deletedAt (soft delete) and actor columns
+//   - snake_case table names via @@map, camelCase in TypeScript
+//   - money is NEVER a float (ADR-0005); no monetary columns exist yet
+//
+// M0 defines only `User`, which is the identity boundary from ADR-0003.
+// Trip and TripMembership arrive in M1 with the authorization layer.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+// Prisma 7 removed `url` from the datasource block. The migration/introspection
+// connection string now lives in prisma.config.ts at the repo root, and the
+// runtime client connects through a driver adapter (@prisma/adapter-pg) rather
+// than a bundled query engine. See ADR-0011.
+datasource db {
+  provider = "postgresql"
+}
+
+/// The canonical user record inside TripOS.
+///
+/// Clerk owns authentication; this table owns identity as the rest of the system
+/// sees it (ADR-0003). `clerkUserId` appears in exactly this one column and
+/// nowhere else in the schema — every other table references `User.id`. That is
+/// what makes changing identity provider a re-mapping of one column rather than a
+/// migration of the entire database.
+model User {
+  id String @id @default(cuid())
+
+  /// Clerk's subject identifier. The ONLY reference to Clerk in the schema.
+  clerkUserId String @unique @map("clerk_user_id")
+
+  email       String  @unique
+  displayName String  @map("display_name")
+  avatarUrl   String? @map("avatar_url")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  /// Soft delete. Account deletion must preserve ledger integrity for trips the
+  /// user participated in, so rows are anonymised rather than removed
+  /// (docs/prd-review.md §4.9).
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([deletedAt])
+  @@map("users")
+}

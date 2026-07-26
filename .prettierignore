@@ -1,0 +1,10 @@
+node_modules
+.nx
+dist
+build
+out
+coverage
+.next
+pnpm-lock.yaml
+libs/shared/database/src/generated
+docs/api

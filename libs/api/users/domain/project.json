@@ -1,0 +1,20 @@
+{
+  "name": "api-users-domain",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/users/domain/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:domain", "domain:users"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": [
+          "tsc -p libs/api/users/domain/tsconfig.lib.json --noEmit",
+          "tsc -p libs/api/users/domain/tsconfig.spec.json --noEmit"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

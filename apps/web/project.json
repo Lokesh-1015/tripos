@@ -1,0 +1,9 @@
+{
+  "name": "web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/web",
+  "projectType": "application",
+  "tags": ["scope:web", "type:app"],
+  "// typecheck": "Deliberately absent. apps/web/tsconfig.json includes .next/types/**, which only exists after a build — a standalone typecheck target therefore passes or fails depending on whether a build ran first (Nx flagged exactly that as a flaky task). `next build` runs TypeScript itself, so type errors in web are caught by the build target instead. See CLAUDE.md §12.",
+  "targets": {}
+}

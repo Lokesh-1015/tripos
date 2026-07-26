@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Nx
+.nx/cache
+.nx/workspace-data
+
+# Build output
+dist/
+build/
+out/
+tmp/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# Prisma generated client (regenerated from schema; never committed)
+libs/shared/database/src/generated/
+
+# Environment — .env.example IS committed, real env files never are
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Sentry
+.sentryclirc
+
+# Next.js
+.next
+out
+
+vitest.config.*.timestamp*

@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    // `nodenext` rather than `commonjs`/`node10` so TypeScript honours package
+    // `exports` maps — the oRPC packages are ESM-only and publish their types
+    // only through that field (ADR-0009). With no `"type": "module"` in the
+    // generated package.json these files are still treated as CommonJS, so
+    // emit and extensionless relative imports are unchanged.
+    //
+    // At runtime, Node 24 can `require()` a synchronous ESM graph, which is what
+    // lets a CommonJS Nest bundle depend on the ESM-only @orpc/nest.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    // Required by NestJS: dependency injection reads emitted constructor
+    // parameter metadata. See the note in tsconfig.base.json about why
+    // `verbatimModuleSyntax` must stay off for this app.
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es2022"
+  },
+  "include": ["src/**/*.ts"]
+}

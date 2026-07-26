@@ -1,0 +1,17 @@
+{
+  "name": "api-shared-database",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/shared/database/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:infrastructure", "domain:shared"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": ["tsc -p libs/api/shared/database/tsconfig.lib.json --noEmit"],
+        "parallel": false
+      }
+    }
+  }
+}
