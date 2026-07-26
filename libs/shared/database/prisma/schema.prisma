@@ -51,6 +51,157 @@ model User {
   /// (docs/prd-review.md §4.9).
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
+  memberships   TripMembership[]
+  createdTrips  Trip[]           @relation("TripCreatedBy")
+  sentInvites   TripInvite[]     @relation("TripInviteCreatedBy")
+
   @@index([deletedAt])
   @@map("users")
+}
+
+/// Where a trip sits in its lifecycle. Gates behaviour across the product:
+/// when voting closes, when live location is permitted, when Trip Replay
+/// generates, and what is still editable (docs/prd-review.md §4.5).
+enum TripStatus {
+  DRAFT
+  PLANNING
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+
+  @@map("trip_status")
+}
+
+/// Authorization roles (ADR-0006). VIEWER exists for the real case of someone
+/// who funds or follows a trip without participating in it.
+enum TripRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+
+  @@map("trip_role")
+}
+
+/// Membership state. Removed members keep their row: their expenses and
+/// messages must survive, or the group's balances break (ADR-0005).
+enum TripMembershipStatus {
+  ACTIVE
+  REMOVED
+
+  @@map("trip_membership_status")
+}
+
+model Trip {
+  id String @id @default(cuid())
+
+  name        String
+  description String?
+  destination String?
+
+  /// IANA timezone, e.g. "Asia/Kolkata". Required: itinerary times render in
+  /// trip-local time by default, not viewer-local (CLAUDE.md §9).
+  timezone String
+
+  /// ISO-4217 base currency. Every expense stores its own currency plus a
+  /// snapshot of the rate to this one, so historical totals never move when a
+  /// rate does (ADR-0005). Present from day one even while the UI is
+  /// single-currency, because retrofitting currency is a brutal migration.
+  baseCurrency String @default("INR") @map("base_currency") @db.Char(3)
+
+  /// Date-only, NOT instants. A trip starting on the 3rd starts on the 3rd in
+  /// every timezone; storing an instant would shift it across a date boundary
+  /// (CLAUDE.md §9).
+  startDate DateTime? @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date
+
+  status TripStatus @default(PLANNING)
+
+  coverImageUrl String? @map("cover_image_url")
+
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("TripCreatedBy", fields: [createdById], references: [id])
+  updatedById String? @map("updated_by_id")
+
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(6)
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  memberships TripMembership[]
+  invites     TripInvite[]
+
+  @@index([status])
+  @@index([deletedAt])
+  @@map("trips")
+}
+
+/// The authorization root (ADR-0006).
+///
+/// Every trip-scoped permission decision in the product resolves to a row here.
+/// `TripAccessGuard` loads it once per request; nothing trusts a client-supplied
+/// role or trip id.
+model TripMembership {
+  id String @id @default(cuid())
+
+  tripId String @map("trip_id")
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  role   TripRole
+  status TripMembershipStatus @default(ACTIVE)
+
+  invitedById String?   @map("invited_by_id")
+  joinedAt    DateTime  @default(now()) @map("joined_at") @db.Timestamptz(6)
+  removedAt   DateTime? @map("removed_at") @db.Timestamptz(6)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  /// One membership per person per trip. The database enforces it so a double
+  /// invite-accept cannot create two rows with conflicting roles.
+  @@unique([tripId, userId])
+  /// The guard's hot path: "which trips can this user see, and as what".
+  @@index([userId, status])
+  @@index([tripId, status])
+  @@map("trip_memberships")
+}
+
+/// An invitation to join a trip.
+///
+/// A trip with one member has no value, so this is the most important flow in
+/// the product (docs/prd-review.md §4.8) — and an unbounded invite endpoint is a
+/// spam vector, hence expiry, use limits, and revocation.
+model TripInvite {
+  id String @id @default(cuid())
+
+  tripId String @map("trip_id")
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  /// SHA-256 of the invite token, never the token itself. The raw token is shown
+  /// to the inviter once and never stored — a leaked database backup must not
+  /// hand out trip access, exactly as with passwords.
+  tokenHash String @unique @map("token_hash")
+
+  /// Role granted on acceptance. Never OWNER — ownership transfers explicitly.
+  role TripRole @default(MEMBER)
+
+  /// Optional. Set for an invite addressed to one person; null for a share link.
+  email String?
+
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("TripInviteCreatedBy", fields: [createdById], references: [id])
+
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  maxUses   Int?      @map("max_uses")
+  useCount  Int       @default(0) @map("use_count")
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([tripId, revokedAt])
+  @@map("trip_invites")
 }
