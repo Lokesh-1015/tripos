@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '@tripos/api/shared/database';
+import { PRISMA, PrismaModule } from '@tripos/api/shared/database';
+import type { PrismaClient } from '@tripos/shared/database';
 import { SyncClerkUserUseCase, USER_REPOSITORY } from '@tripos/api/users/application';
 import type { UserRepository } from '@tripos/api/users/application';
 import { PrismaUserRepository } from '@tripos/api/users/infrastructure';
@@ -20,8 +21,12 @@ import { CLERK_WEBHOOK_SIGNING_SECRET } from './users.tokens';
   controllers: [ClerkWebhookController],
   providers: [
     {
+      // A factory rather than `useClass`, because the adapter carries no Nest
+      // decorators — see the note in PrismaUserRepository. Binding it here is
+      // exactly the composition root's job.
       provide: USER_REPOSITORY,
-      useClass: PrismaUserRepository,
+      useFactory: (prisma: PrismaClient) => new PrismaUserRepository(prisma),
+      inject: [PRISMA],
     },
     {
       provide: SyncClerkUserUseCase,

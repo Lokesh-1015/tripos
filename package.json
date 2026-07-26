@@ -27,6 +27,7 @@
     "db:studio": "prisma studio",
     "db:psql": "docker exec -it tripos-postgres psql -U tripos -d tripos",
     "api:docs": "tsx --tsconfig tsconfig.scripts.json scripts/generate-openapi.ts",
+    "users:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-clerk-users.ts",
     "postinstall": "prisma generate"
   },
   "devDependencies": {

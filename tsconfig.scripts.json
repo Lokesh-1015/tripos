@@ -5,6 +5,11 @@
     // which publish types only via `exports` maps — hence bundler resolution.
     "module": "esnext",
     "moduleResolution": "bundler",
+    // Scripts may import Nest-decorated adapters (e.g. PrismaUserRepository in
+    // the user backfill), so the legacy decorator transform must be enabled or
+    // esbuild refuses to parse them.
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "types": ["node"],
     "noEmit": true
   },

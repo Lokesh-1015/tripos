@@ -1,5 +1,3 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { PRISMA } from '@tripos/api/shared/database';
 import type { SyncedUser, UserRepository } from '@tripos/api/users/application';
 import type { UserProfile } from '@tripos/api/users/domain';
 import type { PrismaClient } from '@tripos/shared/database';
@@ -10,10 +8,15 @@ import type { PrismaClient } from '@tripos/shared/database';
  * Prisma appears here and nowhere above this layer (CLAUDE.md §4) — the use case
  * depends on the interface, so it stays testable without a database and the
  * module stays extractable.
+ *
+ * DELIBERATELY FREE OF NEST DECORATORS. The client is an ordinary constructor
+ * argument, and `UsersModule` (the composition root) supplies it via a factory.
+ * That keeps this adapter usable outside an HTTP process — the `users:backfill`
+ * reconciliation script constructs it directly — and means importing it never
+ * drags in Nest's decorator transform.
  */
-@Injectable()
 export class PrismaUserRepository implements UserRepository {
-  constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async upsertByClerkUserId(clerkUserId: string, profile: UserProfile): Promise<SyncedUser> {
     // A single upsert keyed on the unique clerkUserId is what makes retried and

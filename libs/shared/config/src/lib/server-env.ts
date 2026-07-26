@@ -46,6 +46,15 @@ export const serverEnvSchema = z.object({
    * delete users.
    */
   CLERK_WEBHOOK_SIGNING_SECRET: z.string().startsWith('whsec_').optional(),
+
+  /**
+   * Clerk Backend API key. Used by the reconciliation backfill to read users
+   * that predate the webhook endpoint, or whose deliveries failed.
+   *
+   * Optional for the same reason as the signing secret: the API boots without it.
+   * NEVER expose this to the client — it is not a NEXT_PUBLIC_* value.
+   */
+  CLERK_SECRET_KEY: z.string().startsWith('sk_').optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
