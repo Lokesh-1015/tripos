@@ -1,0 +1,17 @@
+{
+  "name": "web-trips-feature",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/web/trips/feature/src",
+  "projectType": "library",
+  "tags": ["scope:web", "type:feature", "domain:trips"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": ["tsc -p libs/web/trips/feature/tsconfig.lib.json --noEmit"],
+        "parallel": false
+      }
+    }
+  }
+}

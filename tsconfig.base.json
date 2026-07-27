@@ -38,7 +38,9 @@
       "@tripos/api/trips/domain": ["./libs/api/trips/domain/src/index.ts"],
       "@tripos/api/trips/application": ["./libs/api/trips/application/src/index.ts"],
       "@tripos/api/trips/infrastructure": ["./libs/api/trips/infrastructure/src/index.ts"],
-      "@tripos/api/trips/feature": ["./libs/api/trips/feature/src/index.ts"]
+      "@tripos/api/trips/feature": ["./libs/api/trips/feature/src/index.ts"],
+      "@tripos/web/trips/data-access": ["./libs/web/trips/data-access/src/index.ts"],
+      "@tripos/web/trips/feature": ["./libs/web/trips/feature/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

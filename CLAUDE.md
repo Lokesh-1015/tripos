@@ -132,6 +132,7 @@ Enforced constraints (in the root ESLint config):
 | `type:application`    | `type:domain`, `type:util`                                                                           |
 | `type:domain`         | `type:domain`, `type:util`                                                                           |
 | `type:infrastructure` | `type:infrastructure`, `type:application`, `type:domain`, `type:util`                                |
+| `type:data-access`    | `type:data-access`, `type:domain`, `type:util`                                                       |
 | `type:ui`             | `type:ui`, `type:util`                                                                               |
 
 `feature` may see `infrastructure` because the Nest module there is the **composition root** — binding a port to its adapter is precisely its job, and no other layer is allowed to know both. The invariant that matters is the one above it: **`application` and `domain` can never reach `infrastructure`**, which is what keeps business logic testable without a database.

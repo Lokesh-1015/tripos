@@ -67,7 +67,13 @@ const depConstraints = [
     sourceTag: 'type:application',
     onlyDependOnLibsWithTags: ['type:application', 'type:domain', 'type:util'],
   },
-  { sourceTag: 'type:data-access', onlyDependOnLibsWithTags: ['type:domain', 'type:util'] },
+  {
+    // Mirrors the `infrastructure` rule: a domain's data-access layer composes
+    // with the shared API client in `web/shared/data-access`. Cross-domain reach
+    // is still blocked by the `domain:*` constraints below.
+    sourceTag: 'type:data-access',
+    onlyDependOnLibsWithTags: ['type:data-access', 'type:domain', 'type:util'],
+  },
   { sourceTag: 'type:ui', onlyDependOnLibsWithTags: ['type:ui', 'type:util'] },
 
   // `type:domain` is the innermost layer: pure business rules, no I/O, no

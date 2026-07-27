@@ -1,57 +1,45 @@
-import { loadClientEnv } from '@tripos/shared/config';
-import type { SystemStatus } from '@tripos/shared/contracts';
-import { createApiClient } from '@tripos/web/shared/data-access';
+import { auth } from '@clerk/nextjs/server';
+import { SignInButton, SignUpButton } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
 
 /**
- * Root route — a Server Component (CLAUDE.md §13).
+ * Root route.
  *
- * This exists to prove the contract pipeline end to end: one Zod schema in
- * `libs/shared/contracts`, implemented by `apps/api`, called here through a
- * client whose types are derived from that same schema. Change the contract and
- * this file stops compiling — which is exactly the property we want
- * (ADR-0004, ADR-0009).
- *
- * The marketing page and authenticated dashboard replace this in M1.
+ * Signed-in users go straight to their trips; signed-out visitors get the pitch.
+ * This is the only genuinely public page, and the one place SEO matters
+ * (docs/prd-review.md §3.4) — everything else is a private workspace.
  */
 export default async function HomePage() {
-  const env = loadClientEnv();
-  const api = createApiClient({ baseUrl: env.NEXT_PUBLIC_API_URL });
+  const { userId } = await auth();
 
-  let status: SystemStatus | null = null;
-  let error: string | null = null;
-
-  try {
-    status = await api.system.status();
-  } catch (cause) {
-    // The API being unreachable must not blank the page — degrade visibly.
-    error = cause instanceof Error ? cause.message : 'Unknown error';
+  if (userId) {
+    redirect('/trips');
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">TripOS</h1>
-      <p className="text-text-muted mt-2">A collaborative workspace for group travel.</p>
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-16">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Plan the trip, not the spreadsheet
+        </h1>
+        <p className="text-text-muted mt-3">
+          TripOS keeps a group&apos;s plans, decisions, costs and memories in one place — so the
+          details stop getting lost in the chat.
+        </p>
+      </div>
 
-      <section className="border-border bg-surface-muted mt-8 rounded-[--radius-card] border p-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide">API status</h2>
-
-        {status ? (
-          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
-            <dt className="text-text-muted">Status</dt>
-            <dd className="text-positive font-medium">{status.status}</dd>
-            <dt className="text-text-muted">Environment</dt>
-            <dd>{status.environment}</dd>
-            <dt className="text-text-muted">Uptime</dt>
-            <dd>{status.uptimeSeconds}s</dd>
-            <dt className="text-text-muted">Server time</dt>
-            <dd className="font-mono text-xs">{status.serverTime}</dd>
-          </dl>
-        ) : (
-          <p role="status" className="text-danger mt-3 text-sm">
-            API unreachable: {error}
-          </p>
-        )}
-      </section>
+      <div className="flex flex-wrap gap-3">
+        <SignUpButton>
+          <button className="bg-brand-600 rounded-[--radius-control] px-4 py-2 font-medium text-white">
+            Create your first trip
+          </button>
+        </SignUpButton>
+        <SignInButton>
+          <button className="border-border rounded-[--radius-control] border px-4 py-2 font-medium">
+            Sign in
+          </button>
+        </SignInButton>
+      </div>
     </main>
   );
 }
