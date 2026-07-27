@@ -1,4 +1,5 @@
 import { Controller, Inject } from '@nestjs/common';
+import { Public } from '@tripos/api/shared/auth';
 import { Implement, implement } from '@orpc/nest';
 import type { ServerEnv } from '@tripos/shared/config';
 import { contract } from '@tripos/shared/contracts';
@@ -15,6 +16,9 @@ import { SERVER_ENV } from '../config/server-env';
  * This controller lives in the app rather than a domain library because it
  * reports on the process itself, not on a business domain (CLAUDE.md §3).
  */
+// Build/environment metadata only — no user data, and useful for debugging a
+// deployment before you can authenticate against it.
+@Public()
 @Controller()
 export class SystemController {
   private readonly startedAt = Date.now();

@@ -32,7 +32,9 @@
       "@tripos/api/users/application": ["./libs/api/users/application/src/index.ts"],
       "@tripos/api/users/infrastructure": ["./libs/api/users/infrastructure/src/index.ts"],
       "@tripos/api/users/feature": ["./libs/api/users/feature/src/index.ts"],
-      "@tripos/api/shared/authz": ["./libs/api/shared/authz/src/index.ts"]
+      "@tripos/api/shared/authz": ["./libs/api/shared/authz/src/index.ts"],
+      "@tripos/api/shared/auth": ["./libs/api/shared/auth/src/index.ts"],
+      "@tripos/api/shared/trip-access": ["./libs/api/shared/trip-access/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

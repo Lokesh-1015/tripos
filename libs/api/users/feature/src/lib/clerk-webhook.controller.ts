@@ -9,6 +9,7 @@ import {
   Req,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { Public } from '@tripos/api/shared/auth';
 import { SyncClerkUserUseCase, type ClerkUserEventType } from '@tripos/api/users/application';
 import { verifyWebhook } from '@clerk/backend/webhooks';
 import type { IncomingMessage } from 'node:http';
@@ -33,6 +34,10 @@ const HANDLED_EVENTS: readonly string[] = [
  *    bytes and break the signature, so `rawBody: true` is set in main.ts.
  *  - We never log the payload — it contains email addresses (CLAUDE.md §14).
  */
+// Clerk's servers hold no TripOS session. This route is unauthenticated by
+// necessity and authenticated by SIGNATURE instead — see the verification below,
+// which is what makes @Public() safe here.
+@Public()
 @Controller('webhooks')
 export class ClerkWebhookController {
   private readonly logger = new Logger(ClerkWebhookController.name);

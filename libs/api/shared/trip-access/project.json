@@ -1,0 +1,20 @@
+{
+  "name": "api-shared-trip-access",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/shared/trip-access/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:feature", "domain:shared"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": [
+          "tsc -p libs/api/shared/trip-access/tsconfig.lib.json --noEmit",
+          "tsc -p libs/api/shared/trip-access/tsconfig.spec.json --noEmit"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

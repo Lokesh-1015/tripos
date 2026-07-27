@@ -1,4 +1,5 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { Public } from '@tripos/api/shared/auth';
 import { ReadinessService, type ReadinessReport } from './readiness.service';
 
 /**
@@ -8,6 +9,8 @@ import { ReadinessService, type ReadinessReport } from './readiness.service';
  * platform probes must keep working even if the contract layer is misconfigured,
  * and they are infrastructure rather than product API surface.
  */
+// Platform probes must answer without credentials — a load balancer has none.
+@Public()
 @Controller()
 export class HealthController {
   private readonly startedAt = Date.now();

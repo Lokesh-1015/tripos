@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from '@tripos/api/shared/auth';
+import { TripAccessModule } from '@tripos/api/shared/trip-access';
 import { UsersModule } from '@tripos/api/users/feature';
 import { ORPCModule } from '@orpc/nest';
 import type { ServerEnv } from '@tripos/shared/config';
@@ -61,6 +63,15 @@ import { SystemController } from './system/system.controller';
     // Wires oRPC into Nest so `@Implement`-decorated handlers are served with
     // contract-derived validation (ADR-0009).
     ORPCModule.forRoot({}),
+
+    // Authentication, registered globally: every route requires a valid Clerk
+    // session unless it opts out with @Public(). Fail-safe by default.
+    AuthModule,
+
+    // Trip-scoped authorization. Global so no domain module can forget to import
+    // it — with an authorization guard, a forgotten import is a security hole
+    // rather than a compile error (ADR-0006).
+    TripAccessModule,
 
     // Domain modules. Each arrives from libs/api/<domain>/feature (CLAUDE.md §3).
     UsersModule,
