@@ -1,0 +1,17 @@
+{
+  "name": "api-polls-infrastructure",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/polls/infrastructure/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:infrastructure", "domain:polls"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": ["tsc -p libs/api/polls/infrastructure/tsconfig.lib.json --noEmit"],
+        "parallel": false
+      }
+    }
+  }
+}

@@ -40,7 +40,11 @@
       "@tripos/api/trips/infrastructure": ["./libs/api/trips/infrastructure/src/index.ts"],
       "@tripos/api/trips/feature": ["./libs/api/trips/feature/src/index.ts"],
       "@tripos/web/trips/data-access": ["./libs/web/trips/data-access/src/index.ts"],
-      "@tripos/web/trips/feature": ["./libs/web/trips/feature/src/index.ts"]
+      "@tripos/web/trips/feature": ["./libs/web/trips/feature/src/index.ts"],
+      "@tripos/api/polls/domain": ["./libs/api/polls/domain/src/index.ts"],
+      "@tripos/api/polls/application": ["./libs/api/polls/application/src/index.ts"],
+      "@tripos/api/polls/infrastructure": ["./libs/api/polls/infrastructure/src/index.ts"],
+      "@tripos/api/polls/feature": ["./libs/api/polls/feature/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

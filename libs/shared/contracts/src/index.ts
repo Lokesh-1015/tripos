@@ -17,3 +17,13 @@ export {
   tripsContract,
 } from './lib/trips.contract';
 export type { CreateTripInputDto, TripMemberDto, TripSummaryDto } from './lib/trips.contract';
+
+export {
+  pollKindSchema,
+  pollOptionSchema,
+  pollSchema,
+  pollStatusSchema,
+  pollSubjectSchema,
+  pollsContract,
+} from './lib/polls.contract';
+export type { PollDto } from './lib/polls.contract';

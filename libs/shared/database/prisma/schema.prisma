@@ -54,6 +54,7 @@ model User {
   memberships   TripMembership[]
   createdTrips  Trip[]           @relation("TripCreatedBy")
   sentInvites   TripInvite[]     @relation("TripInviteCreatedBy")
+  votes         Vote[]
 
   @@index([deletedAt])
   @@map("users")
@@ -130,10 +131,130 @@ model Trip {
 
   memberships TripMembership[]
   invites     TripInvite[]
+  polls       Poll[]
 
   @@index([status])
   @@index([deletedAt])
   @@map("trips")
+}
+
+/// What a poll decides.
+///
+/// PRD §9 lists destination, date, activity, restaurant and hotel voting as five
+/// separate features. They are ONE primitive with this discriminator
+/// (docs/prd-review.md §4.4) — five implementations would mean five
+/// half-correct handlings of ties, deadlines and vote changes.
+enum PollSubject {
+  DESTINATION
+  DATES
+  ACTIVITY
+  RESTAURANT
+  ACCOMMODATION
+  GENERAL
+
+  @@map("poll_subject")
+}
+
+enum PollKind {
+  /// Pick exactly one. Casting a new vote replaces the previous one.
+  SINGLE_CHOICE
+  /// Approval voting — tick everything acceptable. Far better than
+  /// single-choice for "which of these restaurants would you be happy with".
+  MULTIPLE_CHOICE
+
+  @@map("poll_kind")
+}
+
+enum PollStatus {
+  OPEN
+  CLOSED
+
+  @@map("poll_status")
+}
+
+model Poll {
+  id String @id @default(cuid())
+
+  tripId String @map("trip_id")
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  subject  PollSubject
+  kind     PollKind    @default(SINGLE_CHOICE)
+  status   PollStatus  @default(OPEN)
+  question String
+
+  /// Optional deadline. A poll past it is closed for voting even while its
+  /// status is still OPEN — the transition is applied lazily rather than by a
+  /// scheduler, so there is no window where a late vote slips in.
+  closesAt DateTime? @map("closes_at") @db.Timestamptz(6)
+
+  /// Whether members may add options themselves, or only the organiser.
+  allowMemberOptions Boolean @default(true) @map("allow_member_options")
+
+  /// The outcome, recorded when the poll closes. Nullable because a poll can be
+  /// closed with no decision (everyone abstained, or the group moved on).
+  decidedOptionId String?     @unique @map("decided_option_id")
+  decidedOption   PollOption? @relation("PollDecision", fields: [decidedOptionId], references: [id])
+  closedAt        DateTime?   @map("closed_at") @db.Timestamptz(6)
+
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  options PollOption[] @relation("PollOptions")
+  votes   Vote[]
+
+  @@index([tripId, status])
+  @@map("polls")
+}
+
+model PollOption {
+  id String @id @default(cuid())
+
+  pollId String @map("poll_id")
+  poll   Poll   @relation("PollOptions", fields: [pollId], references: [id], onDelete: Cascade)
+
+  label       String
+  description String?
+  /// A booking page, map pin, or menu — the reference TripOS stores rather than
+  /// the inventory it deliberately does not (PRD §3).
+  url         String?
+
+  /// Set only for DATES polls. Date-only, never instants: a trip starting on the
+  /// 3rd starts on the 3rd in every timezone (CLAUDE.md §9).
+  startDate DateTime? @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date
+
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  votes       Vote[]
+  decidedFor  Poll?  @relation("PollDecision")
+
+  @@index([pollId])
+  @@map("poll_options")
+}
+
+model Vote {
+  id String @id @default(cuid())
+
+  pollId   String     @map("poll_id")
+  poll     Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId String     @map("option_id")
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  /// One vote per person per option. For SINGLE_CHOICE the use case additionally
+  /// clears the voter's other votes, so "change your vote" works — a gap the PRD
+  /// left open (docs/prd-review.md §4.14).
+  @@unique([optionId, userId])
+  @@index([pollId, userId])
+  @@map("votes")
 }
 
 /// The authorization root (ADR-0006).

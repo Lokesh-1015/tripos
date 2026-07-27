@@ -1,0 +1,17 @@
+{
+  "name": "api-polls-feature",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/polls/feature/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:feature", "domain:polls"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": ["tsc -p libs/api/polls/feature/tsconfig.lib.json --noEmit"],
+        "parallel": false
+      }
+    }
+  }
+}

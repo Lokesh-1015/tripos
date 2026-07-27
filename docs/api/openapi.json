@@ -920,6 +920,1166 @@
           }
         }
       }
+    },
+    "/trips/{tripId}/polls": {
+      "post": {
+        "operationId": "polls.create",
+        "summary": "Create a poll",
+        "tags": [
+          "polls"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "enum": [
+                      "DESTINATION",
+                      "DATES",
+                      "ACTIVITY",
+                      "RESTAURANT",
+                      "ACCOMMODATION",
+                      "GENERAL"
+                    ],
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "SINGLE_CHOICE",
+                      "MULTIPLE_CHOICE"
+                    ],
+                    "type": "string",
+                    "default": "SINGLE_CHOICE"
+                  },
+                  "question": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "closesAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "allowMemberOptions": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "options": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        },
+                        "description": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 500
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "url": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uri"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "startDate": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "endDate": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "label"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "subject",
+                  "question",
+                  "options"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "tripId": {
+                      "type": "string"
+                    },
+                    "subject": {
+                      "enum": [
+                        "DESTINATION",
+                        "DATES",
+                        "ACTIVITY",
+                        "RESTAURANT",
+                        "ACCOMMODATION",
+                        "GENERAL"
+                      ],
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "SINGLE_CHOICE",
+                        "MULTIPLE_CHOICE"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "OPEN",
+                        "CLOSED"
+                      ],
+                      "type": "string"
+                    },
+                    "question": {
+                      "type": "string"
+                    },
+                    "closesAt": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "allowMemberOptions": {
+                      "type": "boolean"
+                    },
+                    "decidedOptionId": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdById": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "url": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "startDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "votes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "isLeading": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "description",
+                          "url",
+                          "startDate",
+                          "endDate",
+                          "votes",
+                          "isLeading"
+                        ]
+                      }
+                    },
+                    "voterCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "isTie": {
+                      "type": "boolean"
+                    },
+                    "myVotes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "isAcceptingVotes": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "tripId",
+                    "subject",
+                    "kind",
+                    "status",
+                    "question",
+                    "closesAt",
+                    "allowMemberOptions",
+                    "decidedOptionId",
+                    "createdById",
+                    "options",
+                    "voterCount",
+                    "isTie",
+                    "myVotes",
+                    "isAcceptingVotes"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "polls.list",
+        "summary": "List polls",
+        "tags": [
+          "polls"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "polls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "tripId": {
+                            "type": "string"
+                          },
+                          "subject": {
+                            "enum": [
+                              "DESTINATION",
+                              "DATES",
+                              "ACTIVITY",
+                              "RESTAURANT",
+                              "ACCOMMODATION",
+                              "GENERAL"
+                            ],
+                            "type": "string"
+                          },
+                          "kind": {
+                            "enum": [
+                              "SINGLE_CHOICE",
+                              "MULTIPLE_CHOICE"
+                            ],
+                            "type": "string"
+                          },
+                          "status": {
+                            "enum": [
+                              "OPEN",
+                              "CLOSED"
+                            ],
+                            "type": "string"
+                          },
+                          "question": {
+                            "type": "string"
+                          },
+                          "closesAt": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "allowMemberOptions": {
+                            "type": "boolean"
+                          },
+                          "decidedOptionId": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "createdById": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                },
+                                "description": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "url": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "startDate": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "format": "date"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "endDate": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "format": "date"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "votes": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "isLeading": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "label",
+                                "description",
+                                "url",
+                                "startDate",
+                                "endDate",
+                                "votes",
+                                "isLeading"
+                              ]
+                            }
+                          },
+                          "voterCount": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "isTie": {
+                            "type": "boolean"
+                          },
+                          "myVotes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "isAcceptingVotes": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "tripId",
+                          "subject",
+                          "kind",
+                          "status",
+                          "question",
+                          "closesAt",
+                          "allowMemberOptions",
+                          "decidedOptionId",
+                          "createdById",
+                          "options",
+                          "voterCount",
+                          "isTie",
+                          "myVotes",
+                          "isAcceptingVotes"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "polls"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/polls/{pollId}/options": {
+      "post": {
+        "operationId": "polls.addOption",
+        "summary": "Add an option to a poll",
+        "tags": [
+          "polls"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pollId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "url": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "startDate": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "endDate": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "label"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "added": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "added"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/polls/{pollId}/votes": {
+      "post": {
+        "operationId": "polls.vote",
+        "summary": "Cast a vote",
+        "tags": [
+          "polls"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pollId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "optionId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "optionId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "tripId": {
+                      "type": "string"
+                    },
+                    "subject": {
+                      "enum": [
+                        "DESTINATION",
+                        "DATES",
+                        "ACTIVITY",
+                        "RESTAURANT",
+                        "ACCOMMODATION",
+                        "GENERAL"
+                      ],
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "SINGLE_CHOICE",
+                        "MULTIPLE_CHOICE"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "OPEN",
+                        "CLOSED"
+                      ],
+                      "type": "string"
+                    },
+                    "question": {
+                      "type": "string"
+                    },
+                    "closesAt": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "allowMemberOptions": {
+                      "type": "boolean"
+                    },
+                    "decidedOptionId": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdById": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "url": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "startDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "votes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "isLeading": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "description",
+                          "url",
+                          "startDate",
+                          "endDate",
+                          "votes",
+                          "isLeading"
+                        ]
+                      }
+                    },
+                    "voterCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "isTie": {
+                      "type": "boolean"
+                    },
+                    "myVotes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "isAcceptingVotes": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "tripId",
+                    "subject",
+                    "kind",
+                    "status",
+                    "question",
+                    "closesAt",
+                    "allowMemberOptions",
+                    "decidedOptionId",
+                    "createdById",
+                    "options",
+                    "voterCount",
+                    "isTie",
+                    "myVotes",
+                    "isAcceptingVotes"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/polls/{pollId}/votes/{optionId}": {
+      "delete": {
+        "operationId": "polls.retractVote",
+        "summary": "Retract a vote",
+        "tags": [
+          "polls"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pollId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "optionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "tripId": {
+                      "type": "string"
+                    },
+                    "subject": {
+                      "enum": [
+                        "DESTINATION",
+                        "DATES",
+                        "ACTIVITY",
+                        "RESTAURANT",
+                        "ACCOMMODATION",
+                        "GENERAL"
+                      ],
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "SINGLE_CHOICE",
+                        "MULTIPLE_CHOICE"
+                      ],
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "OPEN",
+                        "CLOSED"
+                      ],
+                      "type": "string"
+                    },
+                    "question": {
+                      "type": "string"
+                    },
+                    "closesAt": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "allowMemberOptions": {
+                      "type": "boolean"
+                    },
+                    "decidedOptionId": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdById": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "url": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "startDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "votes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "isLeading": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "description",
+                          "url",
+                          "startDate",
+                          "endDate",
+                          "votes",
+                          "isLeading"
+                        ]
+                      }
+                    },
+                    "voterCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "isTie": {
+                      "type": "boolean"
+                    },
+                    "myVotes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "isAcceptingVotes": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "tripId",
+                    "subject",
+                    "kind",
+                    "status",
+                    "question",
+                    "closesAt",
+                    "allowMemberOptions",
+                    "decidedOptionId",
+                    "createdById",
+                    "options",
+                    "voterCount",
+                    "isTie",
+                    "myVotes",
+                    "isAcceptingVotes"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/polls/{pollId}/close": {
+      "post": {
+        "operationId": "polls.close",
+        "summary": "Close a poll and record the decision",
+        "tags": [
+          "polls"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pollId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "optionId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "closed": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "closed"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

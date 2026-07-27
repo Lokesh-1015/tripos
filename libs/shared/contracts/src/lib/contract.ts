@@ -1,3 +1,4 @@
+import { pollsContract } from './polls.contract';
 import { systemContract } from './system.contract';
 import { tripsContract } from './trips.contract';
 
@@ -15,6 +16,7 @@ import { tripsContract } from './trips.contract';
 export const contract = {
   system: systemContract,
   trips: tripsContract,
+  polls: pollsContract,
 };
 
 export type AppContract = typeof contract;
