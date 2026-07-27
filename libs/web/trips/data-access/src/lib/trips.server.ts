@@ -1,4 +1,4 @@
-import type { TripSummaryDto } from '@tripos/shared/contracts';
+import type { TripMemberDto, TripSummaryDto } from '@tripos/shared/contracts';
 import { createServerApiClient } from '@tripos/web/shared/data-access';
 
 /**
@@ -49,4 +49,35 @@ export async function acceptInvite(token: string) {
   const api = await createServerApiClient();
 
   return api.trips.acceptInvite({ token });
+}
+
+export async function listMembers(tripId: string): Promise<TripMemberDto[]> {
+  const api = await createServerApiClient();
+  const { members } = await api.trips.listMembers({ tripId });
+
+  return members;
+}
+
+export async function removeMember(tripId: string, userId: string): Promise<void> {
+  const api = await createServerApiClient();
+  await api.trips.removeMember({ tripId, userId });
+}
+
+export async function changeMemberRole(
+  tripId: string,
+  userId: string,
+  role: 'ADMIN' | 'MEMBER' | 'VIEWER',
+): Promise<void> {
+  const api = await createServerApiClient();
+  await api.trips.changeMemberRole({ tripId, userId, role });
+}
+
+export async function leaveTrip(tripId: string): Promise<void> {
+  const api = await createServerApiClient();
+  await api.trips.leaveTrip({ tripId });
+}
+
+export async function transferOwnership(tripId: string, userId: string): Promise<void> {
+  const api = await createServerApiClient();
+  await api.trips.transferOwnership({ tripId, userId });
 }

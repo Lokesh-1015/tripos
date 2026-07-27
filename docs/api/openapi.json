@@ -208,6 +208,9 @@
                         "VIEWER"
                       ],
                       "type": "string"
+                    },
+                    "myUserId": {
+                      "type": "string"
                     }
                   },
                   "required": [
@@ -220,7 +223,8 @@
                     "endDate",
                     "status",
                     "memberCount",
-                    "myRole"
+                    "myRole",
+                    "myUserId"
                   ]
                 }
               }
@@ -314,6 +318,9 @@
                               "VIEWER"
                             ],
                             "type": "string"
+                          },
+                          "myUserId": {
+                            "type": "string"
                           }
                         },
                         "required": [
@@ -326,7 +333,8 @@
                           "endDate",
                           "status",
                           "memberCount",
-                          "myRole"
+                          "myRole",
+                          "myUserId"
                         ]
                       }
                     }
@@ -433,6 +441,9 @@
                         "VIEWER"
                       ],
                       "type": "string"
+                    },
+                    "myUserId": {
+                      "type": "string"
                     }
                   },
                   "required": [
@@ -445,7 +456,8 @@
                     "endDate",
                     "status",
                     "memberCount",
-                    "myRole"
+                    "myRole",
+                    "myUserId"
                   ]
                 }
               }
@@ -604,6 +616,303 @@
                     "status",
                     "tripId",
                     "role"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/members": {
+      "get": {
+        "operationId": "trips.listMembers",
+        "summary": "List trip members",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userId": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email"
+                          },
+                          "avatarUrl": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "role": {
+                            "enum": [
+                              "OWNER",
+                              "ADMIN",
+                              "MEMBER",
+                              "VIEWER"
+                            ],
+                            "type": "string"
+                          },
+                          "joinedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "userId",
+                          "displayName",
+                          "email",
+                          "avatarUrl",
+                          "role",
+                          "joinedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "members"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/members/{userId}": {
+      "delete": {
+        "operationId": "trips.removeMember",
+        "summary": "Remove a member from a trip",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "removed"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "trips.changeMemberRole",
+        "summary": "Change a member's role",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "enum": [
+                      "ADMIN",
+                      "MEMBER",
+                      "VIEWER"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "role"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "updated"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/leave": {
+      "post": {
+        "operationId": "trips.leaveTrip",
+        "summary": "Leave a trip",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "left": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "left"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/transfer-ownership": {
+      "post": {
+        "operationId": "trips.transferOwnership",
+        "summary": "Transfer trip ownership to another member",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "userId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transferred": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "transferred"
                   ]
                 }
               }

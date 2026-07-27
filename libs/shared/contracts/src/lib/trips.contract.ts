@@ -36,6 +36,14 @@ export const tripSummarySchema = z.object({
   status: tripStatusSchema,
   memberCount: z.number().int().nonnegative(),
   myRole: tripRoleSchema,
+  /**
+   * The caller's own internal user id.
+   *
+   * Returned so the UI can tell which member row is "you" without matching on
+   * role — two people can share a role, so that would identify the wrong person.
+   * It is the internal id, never the Clerk one (ADR-0003).
+   */
+  myUserId: z.string(),
 });
 
 export type TripSummaryDto = z.infer<typeof tripSummarySchema>;
@@ -76,6 +84,20 @@ export const acceptInviteResultSchema = z.object({
   role: tripRoleSchema,
 });
 
+export const tripMemberSchema = z.object({
+  userId: z.string(),
+  displayName: z.string(),
+  email: z.email(),
+  avatarUrl: z.url().nullable(),
+  role: tripRoleSchema,
+  joinedAt: z.iso.datetime(),
+});
+
+export type TripMemberDto = z.infer<typeof tripMemberSchema>;
+
+/** OWNER is absent by design — ownership moves through `transferOwnership`. */
+const assignableRoleSchema = z.enum(['ADMIN', 'MEMBER', 'VIEWER']);
+
 export const tripsContract = {
   create: oc
     .route({ method: 'POST', path: '/trips', summary: 'Create a trip', tags: ['trips'] })
@@ -110,4 +132,54 @@ export const tripsContract = {
     })
     .input(acceptInviteInputSchema)
     .output(acceptInviteResultSchema),
+
+  listMembers: oc
+    .route({
+      method: 'GET',
+      path: '/trips/{tripId}/members',
+      summary: 'List trip members',
+      tags: ['members'],
+    })
+    .input(z.object({ tripId: z.string() }))
+    .output(z.object({ members: z.array(tripMemberSchema) })),
+
+  removeMember: oc
+    .route({
+      method: 'DELETE',
+      path: '/trips/{tripId}/members/{userId}',
+      summary: 'Remove a member from a trip',
+      tags: ['members'],
+    })
+    .input(z.object({ tripId: z.string(), userId: z.string() }))
+    .output(z.object({ removed: z.literal(true) })),
+
+  changeMemberRole: oc
+    .route({
+      method: 'PATCH',
+      path: '/trips/{tripId}/members/{userId}',
+      summary: "Change a member's role",
+      tags: ['members'],
+    })
+    .input(z.object({ tripId: z.string(), userId: z.string(), role: assignableRoleSchema }))
+    .output(z.object({ updated: z.literal(true) })),
+
+  leaveTrip: oc
+    .route({
+      method: 'POST',
+      path: '/trips/{tripId}/leave',
+      summary: 'Leave a trip',
+      tags: ['members'],
+    })
+    .input(z.object({ tripId: z.string() }))
+    .output(z.object({ left: z.literal(true) })),
+
+  transferOwnership: oc
+    .route({
+      method: 'POST',
+      path: '/trips/{tripId}/transfer-ownership',
+      summary: 'Transfer trip ownership to another member',
+      tags: ['members'],
+    })
+    .input(z.object({ tripId: z.string(), userId: z.string() }))
+    .output(z.object({ transferred: z.literal(true) })),
 };

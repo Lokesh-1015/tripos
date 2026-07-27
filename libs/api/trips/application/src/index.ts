@@ -12,6 +12,19 @@ export type { AcceptInviteCommand } from './lib/accept-invite.use-case';
 export { TRIP_REPOSITORY } from './lib/trip-repository.port';
 export type { CreateTripInput, TripRepository, TripSummary } from './lib/trip-repository.port';
 
+export {
+  ChangeMemberRoleUseCase,
+  LeaveTripUseCase,
+  ListMembersUseCase,
+  MemberActionDeniedError,
+  MemberNotFoundError,
+  RemoveMemberUseCase,
+  TransferOwnershipUseCase,
+} from './lib/members.use-cases';
+
+export { TRIP_MEMBER_REPOSITORY } from './lib/trip-member-repository.port';
+export type { TripMemberRepository, TripMemberView } from './lib/trip-member-repository.port';
+
 export { TRIP_INVITE_REPOSITORY } from './lib/trip-invite-repository.port';
 export type {
   CreateInviteInput,

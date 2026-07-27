@@ -1,7 +1,15 @@
 'use server';
 
-import { createInviteLink, createTrip } from '@tripos/web/trips/data-access';
+import {
+  changeMemberRole,
+  createInviteLink,
+  createTrip,
+  leaveTrip,
+  removeMember,
+  transferOwnership,
+} from '@tripos/web/trips/data-access';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 export interface ActionState {
   error: string | null;
@@ -53,6 +61,58 @@ export async function createTripAction(
   }
 
   revalidatePath('/trips');
+
+  return { error: null };
+}
+
+/**
+ * Member actions.
+ *
+ * Each returns the policy's own message on failure — "transfer ownership before
+ * leaving this trip" is actionable in a way that "Forbidden" is not.
+ */
+export async function memberAction(
+  _previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const tripId = String(formData.get('tripId') ?? '');
+  const userId = String(formData.get('userId') ?? '');
+  const intent = String(formData.get('intent') ?? '');
+
+  if (!tripId) {
+    return { error: 'Missing trip' };
+  }
+
+  try {
+    switch (intent) {
+      case 'remove':
+        await removeMember(tripId, userId);
+        break;
+      case 'promote':
+        await changeMemberRole(tripId, userId, 'ADMIN');
+        break;
+      case 'demote':
+        await changeMemberRole(tripId, userId, 'MEMBER');
+        break;
+      case 'transfer':
+        await transferOwnership(tripId, userId);
+        break;
+      case 'leave':
+        await leaveTrip(tripId);
+        break;
+      default:
+        return { error: 'Unknown action' };
+    }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'That action failed' };
+  }
+
+  if (intent === 'leave') {
+    // No longer a member — the trip page would 403, so go back to the list.
+    redirect('/trips');
+  }
+
+  revalidatePath(`/trips/${tripId}`);
 
   return { error: null };
 }

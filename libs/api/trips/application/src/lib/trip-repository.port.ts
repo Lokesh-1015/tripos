@@ -13,6 +13,8 @@ export interface TripSummary {
   readonly memberCount: number;
   /** The requesting user's role — absent when listing trips they don't belong to. */
   readonly myRole: TripRole;
+  /** The requesting user's internal id, so the UI can identify their own row. */
+  readonly myUserId: string;
 }
 
 export interface CreateTripInput {

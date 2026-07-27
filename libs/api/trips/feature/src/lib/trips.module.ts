@@ -2,17 +2,29 @@ import { Module } from '@nestjs/common';
 import { PRISMA, PrismaModule } from '@tripos/api/shared/database';
 import {
   AcceptInviteUseCase,
+  ChangeMemberRoleUseCase,
   CreateInviteUseCase,
   CreateTripUseCase,
+  LeaveTripUseCase,
+  ListMembersUseCase,
   ListTripsUseCase,
+  RemoveMemberUseCase,
   TRIP_INVITE_REPOSITORY,
+  TRIP_MEMBER_REPOSITORY,
   TRIP_REPOSITORY,
+  TransferOwnershipUseCase,
   type TripInviteRepository,
+  type TripMemberRepository,
   type TripRepository,
 } from '@tripos/api/trips/application';
-import { PrismaTripInviteRepository, PrismaTripRepository } from '@tripos/api/trips/infrastructure';
+import {
+  PrismaTripInviteRepository,
+  PrismaTripMemberRepository,
+  PrismaTripRepository,
+} from '@tripos/api/trips/infrastructure';
 import type { PrismaClient } from '@tripos/shared/database';
 import { InvitesController } from './invites.controller';
+import { MembersController } from './members.controller';
 import { TripsController } from './trips.controller';
 
 /**
@@ -24,7 +36,7 @@ import { TripsController } from './trips.controller';
  */
 @Module({
   imports: [PrismaModule],
-  controllers: [TripsController, InvitesController],
+  controllers: [TripsController, InvitesController, MembersController],
   providers: [
     {
       provide: TRIP_REPOSITORY,
@@ -55,6 +67,36 @@ import { TripsController } from './trips.controller';
       provide: AcceptInviteUseCase,
       useFactory: (invites: TripInviteRepository) => new AcceptInviteUseCase(invites),
       inject: [TRIP_INVITE_REPOSITORY],
+    },
+    {
+      provide: TRIP_MEMBER_REPOSITORY,
+      useFactory: (prisma: PrismaClient) => new PrismaTripMemberRepository(prisma),
+      inject: [PRISMA],
+    },
+    {
+      provide: ListMembersUseCase,
+      useFactory: (members: TripMemberRepository) => new ListMembersUseCase(members),
+      inject: [TRIP_MEMBER_REPOSITORY],
+    },
+    {
+      provide: RemoveMemberUseCase,
+      useFactory: (members: TripMemberRepository) => new RemoveMemberUseCase(members),
+      inject: [TRIP_MEMBER_REPOSITORY],
+    },
+    {
+      provide: ChangeMemberRoleUseCase,
+      useFactory: (members: TripMemberRepository) => new ChangeMemberRoleUseCase(members),
+      inject: [TRIP_MEMBER_REPOSITORY],
+    },
+    {
+      provide: LeaveTripUseCase,
+      useFactory: (members: TripMemberRepository) => new LeaveTripUseCase(members),
+      inject: [TRIP_MEMBER_REPOSITORY],
+    },
+    {
+      provide: TransferOwnershipUseCase,
+      useFactory: (members: TripMemberRepository) => new TransferOwnershipUseCase(members),
+      inject: [TRIP_MEMBER_REPOSITORY],
     },
   ],
 })

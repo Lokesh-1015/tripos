@@ -50,7 +50,7 @@ export class PrismaTripRepository implements TripRepository {
         },
       });
 
-      return { ...trip, memberCount: 1, myRole: 'OWNER' as const };
+      return { ...trip, memberCount: 1, myRole: 'OWNER' as const, myUserId: input.createdById };
     });
   }
 
@@ -89,6 +89,7 @@ export class PrismaTripRepository implements TripRepository {
       status: trip.status,
       memberCount: trip._count.memberships,
       myRole: role,
+      myUserId: userId,
     }));
   }
 
@@ -131,6 +132,7 @@ export class PrismaTripRepository implements TripRepository {
       status: trip.status,
       memberCount: trip._count.memberships,
       myRole: membership.role,
+      myUserId: userId,
     };
   }
 }

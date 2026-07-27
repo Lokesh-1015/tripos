@@ -30,6 +30,7 @@ class FakeTripRepository implements TripRepository {
       status: 'PLANNING',
       memberCount: 1,
       myRole: 'OWNER',
+      myUserId: input.createdById,
     };
   }
 

@@ -1,20 +1,22 @@
-import { listMyTrips } from '@tripos/web/trips/data-access';
-import { InvitePanel } from '@tripos/web/trips/feature';
 import { auth } from '@clerk/nextjs/server';
+import { Alert, Badge, PageHeader } from '@tripos/shared/ui';
+import { listMembers, listMyTrips } from '@tripos/web/trips/data-access';
+import { InvitePanel, MembersPanel } from '@tripos/web/trips/feature';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
-/**
- * Trip detail.
- *
- * M1 shows identity and invites; itinerary, expenses, and members arrive in
- * later milestones. The invite panel is here because inviting is the action that
- * matters most right now — a trip with one member has no value.
- */
-export default async function TripPage({ params }: { params: Promise<{ tripId: string }> }) {
-  const { userId } = await auth();
+const STATUS_TONE = {
+  DRAFT: 'neutral',
+  PLANNING: 'brand',
+  ACTIVE: 'positive',
+  COMPLETED: 'neutral',
+  ARCHIVED: 'neutral',
+} as const;
 
-  if (!userId) {
+export default async function TripPage({ params }: { params: Promise<{ tripId: string }> }) {
+  const { userId: clerkUserId } = await auth();
+
+  if (!clerkUserId) {
     redirect('/sign-in');
   }
 
@@ -22,38 +24,56 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
   const trips = await listMyTrips();
   const trip = trips.find((candidate) => candidate.id === tripId);
 
-  // The API would return 403 for a trip you are not a member of; here we simply
-  // have no such trip in the caller's list.
+  // The API returns 403 for a trip you are not a member of; here it simply is
+  // not in the caller's list.
   if (!trip) {
     notFound();
+  }
+
+  let members: Awaited<ReturnType<typeof listMembers>> = [];
+  let membersError: string | null = null;
+
+  try {
+    members = await listMembers(trip.id);
+  } catch (cause) {
+    membersError = cause instanceof Error ? cause.message : 'Could not load members';
   }
 
   const canInvite = trip.myRole === 'OWNER' || trip.myRole === 'ADMIN';
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:py-12">
       <div>
-        <Link href="/trips" className="text-text-muted text-sm">
+        <Link href="/trips" className="text-text-muted hover:text-text text-sm">
           ← All trips
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">{trip.name}</h1>
-        <p className="text-text-muted mt-1 text-sm">
-          {trip.destination ?? 'Destination not set'}
-          {trip.startDate ? ` · ${trip.startDate}` : ''}
-          {trip.endDate && trip.endDate !== trip.startDate ? ` → ${trip.endDate}` : ''}
-        </p>
-        <p className="text-text-muted mt-1 text-xs">
-          {trip.memberCount} {trip.memberCount === 1 ? 'member' : 'members'} ·{' '}
-          {trip.status.toLowerCase()} · {trip.baseCurrency}
-        </p>
+
+        <div className="mt-3">
+          <PageHeader
+            title={trip.name}
+            subtitle={trip.destination ?? 'Destination to be decided'}
+            actions={<Badge tone={STATUS_TONE[trip.status]}>{trip.status.toLowerCase()}</Badge>}
+          />
+        </div>
+
+        <div className="text-text-subtle mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+          <span>
+            {trip.startDate ? `${trip.startDate}` : 'Dates not set'}
+            {trip.endDate && trip.endDate !== trip.startDate ? ` → ${trip.endDate}` : ''}
+          </span>
+          <span aria-hidden>·</span>
+          <span>{trip.baseCurrency}</span>
+          <span aria-hidden>·</span>
+          <span>{trip.timezone}</span>
+        </div>
       </div>
 
-      {canInvite ? (
-        <InvitePanel tripId={trip.id} tripName={trip.name} />
+      {canInvite ? <InvitePanel tripId={trip.id} tripName={trip.name} /> : null}
+
+      {membersError ? (
+        <Alert>{membersError}</Alert>
       ) : (
-        <p className="text-text-muted text-sm">
-          Only the organiser can invite people to this trip.
-        </p>
+        <MembersPanel trip={trip} members={members} currentUserId={trip.myUserId} />
       )}
     </main>
   );

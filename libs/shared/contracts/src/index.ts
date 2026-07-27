@@ -12,7 +12,8 @@ export {
   createdInviteSchema,
   tripRoleSchema,
   tripStatusSchema,
+  tripMemberSchema,
   tripSummarySchema,
   tripsContract,
 } from './lib/trips.contract';
-export type { CreateTripInputDto, TripSummaryDto } from './lib/trips.contract';
+export type { CreateTripInputDto, TripMemberDto, TripSummaryDto } from './lib/trips.contract';
