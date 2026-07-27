@@ -1,4 +1,5 @@
 import { systemContract } from './system.contract';
+import { tripsContract } from './trips.contract';
 
 /**
  * The root API contract.
@@ -13,6 +14,7 @@ import { systemContract } from './system.contract';
  */
 export const contract = {
   system: systemContract,
+  trips: tripsContract,
 };
 
 export type AppContract = typeof contract;

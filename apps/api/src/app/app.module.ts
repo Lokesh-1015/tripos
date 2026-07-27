@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '@tripos/api/shared/auth';
 import { TripAccessModule } from '@tripos/api/shared/trip-access';
+import { TripsModule } from '@tripos/api/trips/feature';
 import { UsersModule } from '@tripos/api/users/feature';
 import { ORPCModule } from '@orpc/nest';
 import type { ServerEnv } from '@tripos/shared/config';
@@ -75,6 +76,7 @@ import { SystemController } from './system/system.controller';
 
     // Domain modules. Each arrives from libs/api/<domain>/feature (CLAUDE.md §3).
     UsersModule,
+    TripsModule,
   ],
   controllers: [HealthController, SystemController],
   providers: [serverEnvProvider, ReadinessService],

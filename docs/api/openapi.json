@@ -60,6 +60,557 @@
           }
         }
       }
+    },
+    "/trips": {
+      "post": {
+        "operationId": "trips.create",
+        "summary": "Create a trip",
+        "tags": [
+          "trips"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "destination": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timezone": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "baseCurrency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "pattern": "^[A-Za-z]{3}$",
+                    "default": "INR"
+                  },
+                  "startDate": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "endDate": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "timezone"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "destination": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "timezone": {
+                      "type": "string"
+                    },
+                    "baseCurrency": {
+                      "type": "string"
+                    },
+                    "startDate": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "endDate": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "status": {
+                      "enum": [
+                        "DRAFT",
+                        "PLANNING",
+                        "ACTIVE",
+                        "COMPLETED",
+                        "ARCHIVED"
+                      ],
+                      "type": "string"
+                    },
+                    "memberCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "myRole": {
+                      "enum": [
+                        "OWNER",
+                        "ADMIN",
+                        "MEMBER",
+                        "VIEWER"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "destination",
+                    "timezone",
+                    "baseCurrency",
+                    "startDate",
+                    "endDate",
+                    "status",
+                    "memberCount",
+                    "myRole"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "trips.list",
+        "summary": "List my trips",
+        "tags": [
+          "trips"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "trips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "destination": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "timezone": {
+                            "type": "string"
+                          },
+                          "baseCurrency": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endDate": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "status": {
+                            "enum": [
+                              "DRAFT",
+                              "PLANNING",
+                              "ACTIVE",
+                              "COMPLETED",
+                              "ARCHIVED"
+                            ],
+                            "type": "string"
+                          },
+                          "memberCount": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "myRole": {
+                            "enum": [
+                              "OWNER",
+                              "ADMIN",
+                              "MEMBER",
+                              "VIEWER"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "destination",
+                          "timezone",
+                          "baseCurrency",
+                          "startDate",
+                          "endDate",
+                          "status",
+                          "memberCount",
+                          "myRole"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "trips"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}": {
+      "get": {
+        "operationId": "trips.get",
+        "summary": "Get a trip",
+        "tags": [
+          "trips"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "destination": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "timezone": {
+                      "type": "string"
+                    },
+                    "baseCurrency": {
+                      "type": "string"
+                    },
+                    "startDate": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "endDate": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "status": {
+                      "enum": [
+                        "DRAFT",
+                        "PLANNING",
+                        "ACTIVE",
+                        "COMPLETED",
+                        "ARCHIVED"
+                      ],
+                      "type": "string"
+                    },
+                    "memberCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "myRole": {
+                      "enum": [
+                        "OWNER",
+                        "ADMIN",
+                        "MEMBER",
+                        "VIEWER"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "destination",
+                    "timezone",
+                    "baseCurrency",
+                    "startDate",
+                    "endDate",
+                    "status",
+                    "memberCount",
+                    "myRole"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/invites": {
+      "post": {
+        "operationId": "trips.createInvite",
+        "summary": "Create an invite link",
+        "tags": [
+          "trips"
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "enum": [
+                      "ADMIN",
+                      "MEMBER",
+                      "VIEWER"
+                    ],
+                    "type": "string",
+                    "default": "MEMBER"
+                  },
+                  "email": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "email"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "maxUses": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "token": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "token",
+                    "expiresAt"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/accept": {
+      "post": {
+        "operationId": "trips.acceptInvite",
+        "summary": "Join a trip with an invite token",
+        "tags": [
+          "trips"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "joined",
+                        "already-member"
+                      ],
+                      "type": "string"
+                    },
+                    "tripId": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "enum": [
+                        "OWNER",
+                        "ADMIN",
+                        "MEMBER",
+                        "VIEWER"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "tripId",
+                    "role"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -3,3 +3,16 @@ export type { AppContract } from './lib/contract';
 
 export { systemContract, systemStatusOutputSchema } from './lib/system.contract';
 export type { SystemStatus } from './lib/system.contract';
+
+export {
+  acceptInviteInputSchema,
+  acceptInviteResultSchema,
+  createInviteInputSchema,
+  createTripInputSchema,
+  createdInviteSchema,
+  tripRoleSchema,
+  tripStatusSchema,
+  tripSummarySchema,
+  tripsContract,
+} from './lib/trips.contract';
+export type { CreateTripInputDto, TripSummaryDto } from './lib/trips.contract';
