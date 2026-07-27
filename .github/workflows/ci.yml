@@ -85,3 +85,11 @@ jobs:
       # design decision that must go through an ADR, never a silent commit.
       - name: Check module boundaries on all projects
         run: pnpm nx run-many -t lint --parallel=3
+
+      # Integration tests against a real Postgres started by Testcontainers
+      # (CLAUDE.md §12). Kept out of the fast unit run because each starts a
+      # container, but they must gate merges: transaction atomicity, unique
+      # constraints and the invite race are guarantees only a real database can
+      # demonstrate. Serial — several containers at once starves the runner.
+      - name: Integration tests (Testcontainers)
+        run: pnpm nx run-many -t test-integration --parallel=1

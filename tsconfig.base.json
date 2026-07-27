@@ -44,7 +44,8 @@
       "@tripos/api/polls/domain": ["./libs/api/polls/domain/src/index.ts"],
       "@tripos/api/polls/application": ["./libs/api/polls/application/src/index.ts"],
       "@tripos/api/polls/infrastructure": ["./libs/api/polls/infrastructure/src/index.ts"],
-      "@tripos/api/polls/feature": ["./libs/api/polls/feature/src/index.ts"]
+      "@tripos/api/polls/feature": ["./libs/api/polls/feature/src/index.ts"],
+      "@tripos/api/shared/testing": ["./libs/api/shared/testing/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

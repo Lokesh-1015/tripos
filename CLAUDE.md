@@ -268,7 +268,10 @@ Strict, with the extras enabled from day one (`tsconfig.base.json`):
 ## 12. Testing
 
 - **Unit** (Vitest) — `domain` layers. Fast, no I/O. Money math is **property-tested**.
-- **Integration** (Vitest + Testcontainers) — `application` + `infrastructure` against **real Postgres**. Do not mock Prisma; a passing test against a mocked Prisma proves nothing.
+- **Integration** (Vitest + Testcontainers) — `infrastructure` against **real Postgres**. Do not mock Prisma; a passing test against a mocked Prisma proves nothing.
+  - Name them `*.integration.spec.ts`. The default `test` target excludes them; `pnpm test:integration` (Nx target `test-integration`) runs them, and CI runs both.
+  - Helpers live in `libs/api/shared/testing`: `startTestDatabase()` spins up Postgres 17, applies **real migrations** (not `db push` — a broken migration should fail here), and `reset()` truncates between tests.
+  - Test the things a fake cannot show: transaction atomicity, unique constraints, and races. Anything provable with a fake belongs in the unit suite, which is 100× faster.
 - **E2E** (Playwright) — the critical path only: sign up → create trip → invite → accept → add expense → settle.
 - **Accessibility** — `axe` in CI. Target WCAG 2.2 AA.
 

@@ -1,0 +1,17 @@
+{
+  "name": "api-shared-testing",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/shared/testing/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:util", "domain:shared"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": ["tsc -p libs/api/shared/testing/tsconfig.lib.json --noEmit"],
+        "parallel": false
+      }
+    }
+  }
+}

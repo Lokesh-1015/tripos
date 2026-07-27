@@ -16,6 +16,10 @@ export default defineConfig(() => ({
     globals: true,
     environment: 'node',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    // Integration specs are excluded here and run by the `test-integration`
+    // target instead. They start a Docker container, so keeping them out of the
+    // default run is what keeps `nx test` a fast inner loop.
+    exclude: ['**/*.integration.spec.ts'],
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../../../coverage/libs/api/trips/infrastructure',

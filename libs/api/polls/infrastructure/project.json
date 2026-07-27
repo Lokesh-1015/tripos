@@ -9,8 +9,18 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "{workspaceRoot}",
-        "commands": ["tsc -p libs/api/polls/infrastructure/tsconfig.lib.json --noEmit"],
+        "commands": [
+          "tsc -p libs/api/polls/infrastructure/tsconfig.lib.json --noEmit",
+          "tsc -p libs/api/polls/infrastructure/tsconfig.spec.json --noEmit"
+        ],
         "parallel": false
+      }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/api/polls/infrastructure",
+        "command": "vitest run --config vitest.integration.config.mts"
       }
     }
   }

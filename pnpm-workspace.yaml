@@ -18,7 +18,12 @@ allowBuilds:
   sharp: true # native image pipeline; required for next/image optimisation
   less: false # not used — TripOS styles with Tailwind (CLAUDE.md §13)
   '@swc/core': true # native Rust compiler used by Nx/Next builds
-
+  # Testcontainers pulls these for REMOTE docker over SSH. We only talk to a
+  # local daemon, and all three have pure-JS fallbacks, so their native builds
+  # buy nothing and are declined.
+  ssh2: false
+  cpu-features: false
+  protobufjs: false
 
 # NOTE on `minimumReleaseAgeExclude`: pnpm refuses packages published very
 # recently, because the hours immediately after a publish are when a compromised
