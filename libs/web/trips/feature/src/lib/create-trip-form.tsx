@@ -1,6 +1,8 @@
 'use client';
 
+import { Alert, Button, Field, Input, Select } from '@tripos/shared/ui';
 import { useActionState, useEffect, useState } from 'react';
+import { CURRENCIES, DEFAULT_CURRENCY } from './currencies';
 import { createTripAction, type ActionState } from './trips.actions';
 
 const initial: ActionState = { error: null };
@@ -8,91 +10,59 @@ const initial: ActionState = { error: null };
 /**
  * Create-trip form.
  *
- * Mobile-first: a single column that stays usable at 375px, since most of this
- * product is used on a phone (CLAUDE.md §13). The date inputs are native, which
- * gives a real date picker on mobile for free.
+ * Mobile-first: one column that stays comfortable at 375px, with native date
+ * inputs so phones get a real picker for free (CLAUDE.md §13).
  */
 export function CreateTripForm() {
   const [state, formAction, pending] = useActionState(createTripAction, initial);
   const [timezone, setTimezone] = useState('Etc/UTC');
 
-  // Resolved on the client because only the browser knows the user's zone.
-  // Captured at submit time via a hidden field.
+  // Only the browser knows the user's zone. Captured into a hidden field at
+  // submit time — every trip needs an IANA zone because itinerary times render
+  // in trip-local time (CLAUDE.md §9).
   useEffect(() => {
     setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'Etc/UTC');
   }, []);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="timezone" value={timezone} />
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Trip name</span>
-        <input
-          name="name"
-          required
-          maxLength={120}
-          placeholder="Goa with the gang"
-          className="border-border rounded-[--radius-control] border px-3 py-2"
-        />
-      </label>
+      <Field label="Trip name">
+        <Input name="name" required maxLength={120} placeholder="Goa with the gang" />
+      </Field>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Destination</span>
-        <input
-          name="destination"
-          maxLength={200}
-          placeholder="Goa, India"
-          className="border-border rounded-[--radius-control] border px-3 py-2"
-        />
-      </label>
+      <Field label="Destination" hint="Optional — you can decide this together later.">
+        <Input name="destination" maxLength={200} placeholder="Goa, India" />
+      </Field>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <label className="flex flex-1 flex-col gap-1 text-sm">
-          <span className="font-medium">Start</span>
-          <input
-            type="date"
-            name="startDate"
-            className="border-border rounded-[--radius-control] border px-3 py-2"
-          />
-        </label>
-
-        <label className="flex flex-1 flex-col gap-1 text-sm">
-          <span className="font-medium">End</span>
-          <input
-            type="date"
-            name="endDate"
-            className="border-border rounded-[--radius-control] border px-3 py-2"
-          />
-        </label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Starts">
+          <Input type="date" name="startDate" />
+        </Field>
+        <Field label="Ends">
+          <Input type="date" name="endDate" />
+        </Field>
       </div>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Currency</span>
-        <input
-          name="baseCurrency"
-          defaultValue="INR"
-          maxLength={3}
-          className="border-border w-28 rounded-[--radius-control] border px-3 py-2 uppercase"
-        />
-        <span className="text-text-muted text-xs">
-          Expenses can be in any currency; totals are shown in this one.
-        </span>
-      </label>
-
-      {state.error ? (
-        <p role="alert" className="text-danger text-sm">
-          {state.error}
-        </p>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="bg-brand-600 rounded-[--radius-control] px-4 py-2 font-medium text-white disabled:opacity-60"
+      <Field
+        label="Currency"
+        hint="Expenses can be logged in any currency; trip totals are shown in this one."
       >
+        <Select name="baseCurrency" defaultValue={DEFAULT_CURRENCY}>
+          {CURRENCIES.map((currency) => (
+            <option key={currency.code} value={currency.code}>
+              {currency.code} · {currency.label} ({currency.symbol})
+            </option>
+          ))}
+        </Select>
+      </Field>
+
+      {state.error ? <Alert>{state.error}</Alert> : null}
+
+      <Button type="submit" disabled={pending}>
         {pending ? 'Creating…' : 'Create trip'}
-      </button>
+      </Button>
     </form>
   );
 }

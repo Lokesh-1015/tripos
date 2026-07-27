@@ -1,16 +1,31 @@
 import type { TripSummaryDto } from '@tripos/shared/contracts';
+import { Badge, Card } from '@tripos/shared/ui';
 import Link from 'next/link';
 
-function formatDates(trip: TripSummaryDto): string | null {
+/**
+ * Renders the stored date-only strings directly.
+ *
+ * Passing them through `new Date()` would shift them across a timezone boundary
+ * — a trip starting on the 3rd would show as the 2nd for anyone west of UTC
+ * (CLAUDE.md §9).
+ */
+function formatDateRange(trip: TripSummaryDto): string | null {
   if (!trip.startDate) return null;
 
-  // Dates are date-only strings; rendering them as-is avoids the timezone shift
-  // that `new Date('2026-08-03').toLocaleDateString()` would introduce
-  // (CLAUDE.md §9).
-  return trip.endDate && trip.endDate !== trip.startDate
-    ? `${trip.startDate} → ${trip.endDate}`
-    : trip.startDate;
+  const pretty = (iso: string) => {
+    const [year, month, day] = iso.split('-');
+    const monthName = MONTHS[Number(month) - 1] ?? '';
+    return `${Number(day)} ${monthName} ${year}`;
+  };
+
+  if (!trip.endDate || trip.endDate === trip.startDate) {
+    return pretty(trip.startDate);
+  }
+
+  return `${pretty(trip.startDate)} → ${pretty(trip.endDate)}`;
 }
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const ROLE_LABEL: Record<TripSummaryDto['myRole'], string> = {
   OWNER: 'Owner',
@@ -19,42 +34,45 @@ const ROLE_LABEL: Record<TripSummaryDto['myRole'], string> = {
   VIEWER: 'Viewer',
 };
 
-export function TripList({ trips }: { trips: TripSummaryDto[] }) {
-  if (trips.length === 0) {
-    return (
-      <p className="text-text-muted border-border rounded-[--radius-card] border border-dashed p-6 text-center text-sm">
-        No trips yet. Create one to get started — then invite the people coming with you.
-      </p>
-    );
-  }
+const STATUS_TONE = {
+  DRAFT: 'neutral',
+  PLANNING: 'brand',
+  ACTIVE: 'positive',
+  COMPLETED: 'neutral',
+  ARCHIVED: 'neutral',
+} as const;
 
+export function TripList({ trips }: { trips: TripSummaryDto[] }) {
   return (
     <ul className="flex flex-col gap-3">
       {trips.map((trip) => {
-        const dates = formatDates(trip);
+        const dates = formatDateRange(trip);
 
         return (
           <li key={trip.id}>
-            <Link
-              href={`/trips/${trip.id}`}
-              className="border-border hover:border-brand-400 block rounded-[--radius-card] border p-4 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <span className="font-medium">{trip.name}</span>
-                <span className="text-text-muted shrink-0 text-xs uppercase tracking-wide">
-                  {ROLE_LABEL[trip.myRole]}
-                </span>
-              </div>
+            <Link href={`/trips/${trip.id}`} className="block focus-visible:outline-none">
+              <Card interactive className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="truncate font-semibold">{trip.name}</h3>
+                  <Badge tone={STATUS_TONE[trip.status]}>{trip.status.toLowerCase()}</Badge>
+                </div>
 
-              <p className="text-text-muted mt-1 text-sm">
-                {trip.destination ?? 'Destination not set'}
-                {dates ? ` · ${dates}` : ''}
-              </p>
+                <p className="text-text-muted mt-1 text-sm">
+                  {trip.destination ?? 'Destination to be decided'}
+                </p>
 
-              <p className="text-text-muted mt-2 text-xs">
-                {trip.memberCount} {trip.memberCount === 1 ? 'member' : 'members'} ·{' '}
-                {trip.status.toLowerCase()}
-              </p>
+                <div className="text-text-subtle mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  {dates ? <span>{dates}</span> : <span>Dates not set</span>}
+                  <span aria-hidden>·</span>
+                  <span>
+                    {trip.memberCount} {trip.memberCount === 1 ? 'member' : 'members'}
+                  </span>
+                  <span aria-hidden>·</span>
+                  <span>{trip.baseCurrency}</span>
+                  <span aria-hidden>·</span>
+                  <span>{ROLE_LABEL[trip.myRole]}</span>
+                </div>
+              </Card>
             </Link>
           </li>
         );

@@ -1,5 +1,6 @@
 'use client';
 
+import { Alert, Button, ButtonLink, Card } from '@tripos/shared/ui';
 import { useActionState, useState } from 'react';
 import { createInviteAction, type InviteState } from './trips.actions';
 
@@ -8,10 +9,10 @@ const initial: InviteState = { token: null, error: null };
 /**
  * Generates and shares an invite link.
  *
- * This is the most important control in the product: a trip with one member has
- * no value, so every bit of friction here costs a participant
+ * The most important control in the product: a trip with one member has no
+ * value, so every bit of friction here costs a participant
  * (docs/prd-review.md §4.8). Hence copy-to-clipboard and a direct WhatsApp
- * hand-off rather than expecting people to select the text themselves.
+ * hand-off rather than expecting anyone to select the text themselves.
  */
 export function InvitePanel({ tripId, tripName }: { tripId: string; tripName: string }) {
   const [state, formAction, pending] = useActionState(createInviteAction, initial);
@@ -25,65 +26,68 @@ export function InvitePanel({ tripId, tripName }: { tripId: string; tripName: st
 
   async function copy() {
     if (!link) return;
-    await navigator.clipboard.writeText(link);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard can be blocked by permissions; the link is visible and
+      // selectable above, so this is a degraded path rather than a failure.
+      setCopied(false);
+    }
   }
 
   return (
-    <section className="border-border rounded-[--radius-card] border p-4">
-      <h2 className="font-medium">Invite people</h2>
-      <p className="text-text-muted mt-1 text-sm">
-        Anyone with the link can join as a member. It expires in 14 days.
-      </p>
+    <Card className="p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">Invite your group</h2>
+          <p className="text-text-muted mt-1 text-sm">
+            Anyone with the link joins as a member. It expires in 14 days.
+          </p>
+        </div>
+        <span className="text-2xl" aria-hidden>
+          ✈️
+        </span>
+      </div>
 
       {link ? (
-        <div className="mt-3 flex flex-col gap-2">
-          <code className="border-border bg-surface-muted overflow-x-auto rounded-[--radius-control] border px-3 py-2 text-xs">
+        <div className="mt-4 flex flex-col gap-3">
+          <code className="border-border bg-surface-sunken block overflow-x-auto rounded-[--radius-control] border px-3 py-2.5 font-mono text-xs">
             {link}
           </code>
 
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={copy}
-              className="border-border rounded-[--radius-control] border px-3 py-2 text-sm"
-            >
-              {copied ? 'Copied' : 'Copy link'}
-            </button>
-
-            <a
+            <ButtonLink
               href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
               target="_blank"
               rel="noreferrer"
-              className="bg-brand-600 rounded-[--radius-control] px-3 py-2 text-sm font-medium text-white"
             >
               Share on WhatsApp
-            </a>
+            </ButtonLink>
+            <Button type="button" variant="secondary" onClick={copy}>
+              {copied ? '✓ Copied' : 'Copy link'}
+            </Button>
           </div>
 
-          <p className="text-text-muted text-xs">
-            Copy it now — for security the link is not stored and cannot be shown again.
+          <p className="text-text-subtle text-xs">
+            Copy it now — for security the link is stored only as a hash and cannot be shown again.
           </p>
         </div>
       ) : (
-        <form action={formAction} className="mt-3">
+        <form action={formAction} className="mt-4">
           <input type="hidden" name="tripId" value={tripId} />
-          <button
-            type="submit"
-            disabled={pending}
-            className="bg-brand-600 rounded-[--radius-control] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-          >
+          <Button type="submit" disabled={pending}>
             {pending ? 'Creating…' : 'Create invite link'}
-          </button>
+          </Button>
         </form>
       )}
 
       {state.error ? (
-        <p role="alert" className="text-danger mt-2 text-sm">
-          {state.error}
-        </p>
+        <div className="mt-3">
+          <Alert>{state.error}</Alert>
+        </div>
       ) : null}
-    </section>
+    </Card>
   );
 }
