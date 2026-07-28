@@ -19,7 +19,6 @@ import {
   RetractVoteUseCase,
   type PollView,
 } from '@tripos/api/polls/application';
-import { CurrentUser, type AuthenticatedUser } from '@tripos/api/shared/auth';
 import type { TripActor } from '@tripos/api/shared/authz';
 import {
   CurrentTripActor,
@@ -61,6 +60,9 @@ function toDto(poll: PollView): PollDto {
     isTie: poll.tally.isTie,
     myVotes: poll.myVotes,
     isAcceptingVotes: poll.isAcceptingVotes,
+    canVote: poll.canVote,
+    canAddOptions: poll.canAddOptions,
+    canClose: poll.canClose,
   };
 }
 
@@ -84,7 +86,7 @@ export class PollsController {
 
   @Implement(contract.polls.create)
   @RequiresTripRole('MEMBER')
-  create(@CurrentUser() user: AuthenticatedUser) {
+  create(@CurrentTripActor() actor: TripActor) {
     return implement(contract.polls.create).handler(async ({ input }) => {
       const poll = await this.guard(() =>
         this.createPoll.execute({
@@ -101,23 +103,11 @@ export class PollsController {
             startDate: option.startDate ? new Date(option.startDate) : null,
             endDate: option.endDate ? new Date(option.endDate) : null,
           })),
-          actorUserId: user.userId,
+          actor,
         }),
       );
 
-      // A freshly created poll has no votes; render it through the same shape.
-      return toDto({
-        ...poll,
-        tally: {
-          perOption: poll.options.map((o) => ({ optionId: o.id, votes: 0, isLeading: false })),
-          voterCount: 0,
-          totalVotes: 0,
-          leaders: [],
-          isTie: false,
-        },
-        myVotes: [],
-        isAcceptingVotes: true,
-      });
+      return toDto(poll);
     });
   }
 
@@ -125,7 +115,7 @@ export class PollsController {
   @RequiresTripRole('VIEWER')
   list(@CurrentTripActor() actor: TripActor) {
     return implement(contract.polls.list).handler(async () => {
-      const polls = await this.listPolls.execute(actor.tripId, actor.userId);
+      const polls = await this.listPolls.execute(actor);
 
       return { polls: polls.map(toDto) };
     });

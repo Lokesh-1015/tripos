@@ -1,0 +1,17 @@
+{
+  "name": "web-polls-data-access",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/web/polls/data-access/src",
+  "projectType": "library",
+  "tags": ["scope:web", "type:data-access", "domain:polls"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": ["tsc -p libs/web/polls/data-access/tsconfig.lib.json --noEmit"],
+        "parallel": false
+      }
+    }
+  }
+}

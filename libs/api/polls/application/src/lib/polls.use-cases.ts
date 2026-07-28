@@ -36,17 +36,51 @@ export interface PollView extends PollRecord {
   /** Option ids the requesting user has voted for. */
   readonly myVotes: string[];
   readonly isAcceptingVotes: boolean;
+
+  /**
+   * What THIS caller may do, decided by the same rules the write paths enforce.
+   *
+   * Returned rather than left for the client to infer: a UI that re-derives
+   * "can I close this?" from role and status is a second copy of the policy,
+   * and the two drift. The server already knows the answer.
+   */
+  readonly canVote: boolean;
+  readonly canAddOptions: boolean;
+  readonly canClose: boolean;
 }
 
-function toView(poll: PollRecord, userId: string, now: Date): PollView {
+/** Mirrors CastVoteUseCase's checks exactly — see the note on PollView. */
+function computeCanVote(poll: PollRecord, actor: TripActor, now: Date): boolean {
+  return hasAtLeastRole(actor.role, 'MEMBER') && checkCanVote(poll, now).canVote;
+}
+
+/** Mirrors AddPollOptionUseCase's checks. */
+function computeCanAddOptions(poll: PollRecord, actor: TripActor): boolean {
+  if (poll.status === 'CLOSED') return false;
+  if (!hasAtLeastRole(actor.role, 'MEMBER')) return false;
+
+  return poll.allowMemberOptions || hasAtLeastRole(actor.role, 'ADMIN');
+}
+
+/** Mirrors ClosePollUseCase's checks. */
+function computeCanClose(poll: PollRecord, actor: TripActor): boolean {
+  if (poll.status === 'CLOSED') return false;
+
+  return hasAtLeastRole(actor.role, 'ADMIN') || poll.createdById === actor.userId;
+}
+
+function toView(poll: PollRecord, actor: TripActor, now: Date): PollView {
   return {
     ...poll,
     tally: tallyVotes(
       poll.options.map((option) => option.id),
       poll.votes,
     ),
-    myVotes: poll.votes.filter((vote) => vote.userId === userId).map((vote) => vote.optionId),
+    myVotes: poll.votes.filter((vote) => vote.userId === actor.userId).map((vote) => vote.optionId),
     isAcceptingVotes: checkCanVote(poll, now).canVote,
+    canVote: computeCanVote(poll, actor, now),
+    canAddOptions: computeCanAddOptions(poll, actor),
+    canClose: computeCanClose(poll, actor),
   };
 }
 
@@ -64,7 +98,7 @@ export interface CreatePollCommand {
     startDate?: Date | null;
     endDate?: Date | null;
   }>;
-  readonly actorUserId: string;
+  readonly actor: TripActor;
 }
 
 export class CreatePollUseCase {
@@ -73,7 +107,15 @@ export class CreatePollUseCase {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  async execute(command: CreatePollCommand): Promise<PollRecord> {
+  /**
+   * Returns a full view rather than the bare record.
+   *
+   * The controller previously assembled an empty tally by hand and asserted
+   * `isAcceptingVotes: true`. That happened to be correct, but it was an
+   * assertion about state rather than a reading of it — exactly the kind of
+   * thing that silently becomes a lie when the rules change.
+   */
+  async execute(command: CreatePollCommand): Promise<PollView> {
     const question = command.question.trim();
     if (question.length === 0) {
       throw new InvalidPollError('A poll needs a question');
@@ -89,14 +131,14 @@ export class CreatePollUseCase {
       throw new InvalidPollError('A poll deadline must be in the future');
     }
 
-    return this.polls.create({
+    const created = await this.polls.create({
       tripId: command.tripId,
       subject: command.subject,
       kind: command.kind,
       question,
       closesAt: command.closesAt,
       allowMemberOptions: command.allowMemberOptions,
-      createdById: command.actorUserId,
+      createdById: command.actor.userId,
       options: command.options.map((option) => ({
         label: option.label.trim(),
         description: option.description?.trim() || null,
@@ -105,6 +147,8 @@ export class CreatePollUseCase {
         endDate: option.endDate ?? null,
       })),
     });
+
+    return toView(created, command.actor, this.now());
   }
 }
 
@@ -114,10 +158,10 @@ export class ListPollsUseCase {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  async execute(tripId: string, actorUserId: string): Promise<PollView[]> {
-    const polls = await this.polls.listForTrip(tripId);
+  async execute(actor: TripActor): Promise<PollView[]> {
+    const polls = await this.polls.listForTrip(actor.tripId);
 
-    return polls.map((poll) => toView(poll, actorUserId, this.now()));
+    return polls.map((poll) => toView(poll, actor, this.now()));
   }
 }
 
@@ -159,7 +203,7 @@ export class CastVoteUseCase {
 
   private async reload(pollId: string, actor: TripActor): Promise<PollView> {
     const poll = await this.requirePoll(pollId, actor.tripId);
-    return toView(poll, actor.userId, this.now());
+    return toView(poll, actor, this.now());
   }
 }
 
@@ -183,7 +227,7 @@ export class RetractVoteUseCase {
     const reloaded = await this.polls.findById(pollId, actor.tripId);
     if (!reloaded) throw new PollNotFoundError();
 
-    return toView(reloaded, actor.userId, this.now());
+    return toView(reloaded, actor, this.now());
   }
 }
 

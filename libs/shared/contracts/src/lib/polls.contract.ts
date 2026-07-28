@@ -54,6 +54,19 @@ export const pollSchema = z.object({
   myVotes: z.array(z.string()),
   /** False once closed OR past its deadline, whichever comes first. */
   isAcceptingVotes: z.boolean(),
+
+  /**
+   * What THIS caller may do, decided server-side by the same rules the write
+   * paths enforce. The client renders from these rather than re-deriving them
+   * from role and status — a second copy of the policy would drift from the
+   * first, and the drift would show up as buttons that fail when pressed.
+   *
+   * They remain a convenience, never the enforcement: every action is
+   * re-checked on the server (ADR-0006).
+   */
+  canVote: z.boolean(),
+  canAddOptions: z.boolean(),
+  canClose: z.boolean(),
 });
 
 export type PollDto = z.infer<typeof pollSchema>;

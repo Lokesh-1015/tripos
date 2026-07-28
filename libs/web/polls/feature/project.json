@@ -1,0 +1,17 @@
+{
+  "name": "web-polls-feature",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/web/polls/feature/src",
+  "projectType": "library",
+  "tags": ["scope:web", "type:feature", "domain:polls"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "commands": ["tsc -p libs/web/polls/feature/tsconfig.lib.json --noEmit"],
+        "parallel": false
+      }
+    }
+  }
+}

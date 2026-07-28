@@ -1215,6 +1215,15 @@
                     },
                     "isAcceptingVotes": {
                       "type": "boolean"
+                    },
+                    "canVote": {
+                      "type": "boolean"
+                    },
+                    "canAddOptions": {
+                      "type": "boolean"
+                    },
+                    "canClose": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -1232,7 +1241,10 @@
                     "voterCount",
                     "isTie",
                     "myVotes",
-                    "isAcceptingVotes"
+                    "isAcceptingVotes",
+                    "canVote",
+                    "canAddOptions",
+                    "canClose"
                   ]
                 }
               }
@@ -1421,6 +1433,15 @@
                           },
                           "isAcceptingVotes": {
                             "type": "boolean"
+                          },
+                          "canVote": {
+                            "type": "boolean"
+                          },
+                          "canAddOptions": {
+                            "type": "boolean"
+                          },
+                          "canClose": {
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -1438,7 +1459,10 @@
                           "voterCount",
                           "isTie",
                           "myVotes",
-                          "isAcceptingVotes"
+                          "isAcceptingVotes",
+                          "canVote",
+                          "canAddOptions",
+                          "canClose"
                         ]
                       }
                     }
@@ -1767,6 +1791,15 @@
                     },
                     "isAcceptingVotes": {
                       "type": "boolean"
+                    },
+                    "canVote": {
+                      "type": "boolean"
+                    },
+                    "canAddOptions": {
+                      "type": "boolean"
+                    },
+                    "canClose": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -1784,7 +1817,10 @@
                     "voterCount",
                     "isTie",
                     "myVotes",
-                    "isAcceptingVotes"
+                    "isAcceptingVotes",
+                    "canVote",
+                    "canAddOptions",
+                    "canClose"
                   ]
                 }
               }
@@ -1986,6 +2022,15 @@
                     },
                     "isAcceptingVotes": {
                       "type": "boolean"
+                    },
+                    "canVote": {
+                      "type": "boolean"
+                    },
+                    "canAddOptions": {
+                      "type": "boolean"
+                    },
+                    "canClose": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -2003,7 +2048,10 @@
                     "voterCount",
                     "isTie",
                     "myVotes",
-                    "isAcceptingVotes"
+                    "isAcceptingVotes",
+                    "canVote",
+                    "canAddOptions",
+                    "canClose"
                   ]
                 }
               }

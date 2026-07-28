@@ -1,5 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { Alert, Badge, PageHeader } from '@tripos/shared/ui';
+import { listPolls } from '@tripos/web/polls/data-access';
+import { PollsSection } from '@tripos/web/polls/feature';
 import { listMembers, listMyTrips } from '@tripos/web/trips/data-access';
 import { InvitePanel, MembersPanel } from '@tripos/web/trips/feature';
 import Link from 'next/link';
@@ -30,14 +32,24 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
     notFound();
   }
 
-  let members: Awaited<ReturnType<typeof listMembers>> = [];
-  let membersError: string | null = null;
+  // Fetched in parallel: they are independent, and serialising them would add a
+  // round trip to every page load for no reason.
+  const [membersResult, pollsResult] = await Promise.allSettled([
+    listMembers(trip.id),
+    listPolls(trip.id),
+  ]);
 
-  try {
-    members = await listMembers(trip.id);
-  } catch (cause) {
-    membersError = cause instanceof Error ? cause.message : 'Could not load members';
-  }
+  const members = membersResult.status === 'fulfilled' ? membersResult.value : [];
+  const membersError =
+    membersResult.status === 'rejected'
+      ? membersResult.reason instanceof Error
+        ? membersResult.reason.message
+        : 'Could not load members'
+      : null;
+
+  // One section failing must not blank the others — allSettled keeps the page
+  // useful when a single call is unhappy.
+  const polls = pollsResult.status === 'fulfilled' ? pollsResult.value : [];
 
   const canInvite = trip.myRole === 'OWNER' || trip.myRole === 'ADMIN';
 
@@ -67,6 +79,8 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
           <span>{trip.timezone}</span>
         </div>
       </div>
+
+      <PollsSection tripId={trip.id} polls={polls} />
 
       {canInvite ? <InvitePanel tripId={trip.id} tripName={trip.name} /> : null}
 

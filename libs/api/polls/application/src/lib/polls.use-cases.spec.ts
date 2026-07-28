@@ -13,6 +13,7 @@ import {
   ClosePollUseCase,
   CreatePollUseCase,
   InvalidPollError,
+  ListPollsUseCase,
   PollActionDeniedError,
   RetractVoteUseCase,
 } from './polls.use-cases';
@@ -144,7 +145,7 @@ describe('CreatePollUseCase', () => {
     closesAt: null,
     allowMemberOptions: true,
     options: [{ label: 'Goa' }, { label: 'Kerala' }],
-    actorUserId: 'owner',
+    actor: actor('owner', 'ADMIN'),
   };
 
   beforeEach(() => {
@@ -181,6 +182,73 @@ describe('CreatePollUseCase', () => {
       const poll = await useCase.execute({ ...command, subject });
       expect(poll.subject).toBe(subject);
     }
+  });
+});
+
+/**
+ * The capability flags are a second expression of the write-path rules, which
+ * makes drift the whole risk: a UI rendering a button the server then refuses is
+ * worse than no button. Each test below asserts the flag AGREES with what the
+ * corresponding action actually does.
+ */
+describe('capability flags agree with the write paths', () => {
+  const viewOf = async (repo: FakePollRepository, who: TripActor) => {
+    const [view] = await new ListPollsUseCase(repo, () => NOW).execute(who);
+    if (!view) throw new Error('expected a poll');
+    return view;
+  };
+
+  it('canVote is false for a viewer, and voting really is refused', async () => {
+    const repo = new FakePollRepository();
+    const viewer = actor('v', 'VIEWER');
+
+    expect((await viewOf(repo, viewer)).canVote).toBe(false);
+    await expect(
+      new CastVoteUseCase(repo, () => NOW).execute(viewer, 'poll_1', 'goa'),
+    ).rejects.toThrow(PollActionDeniedError);
+  });
+
+  it('canVote is false past the deadline, and voting really is refused', async () => {
+    const repo = new FakePollRepository({ closesAt: new Date(NOW.getTime() - 1) });
+    const member = actor('u1');
+
+    expect((await viewOf(repo, member)).canVote).toBe(false);
+    await expect(
+      new CastVoteUseCase(repo, () => NOW).execute(member, 'poll_1', 'goa'),
+    ).rejects.toThrow(PollActionDeniedError);
+  });
+
+  it('canAddOptions is false for a member on a locked poll, and adding really is refused', async () => {
+    const repo = new FakePollRepository({ allowMemberOptions: false });
+    const member = actor('u1');
+
+    expect((await viewOf(repo, member)).canAddOptions).toBe(false);
+    await expect(
+      new AddPollOptionUseCase(repo).execute(member, 'poll_1', { label: 'X' }),
+    ).rejects.toThrow(PollActionDeniedError);
+  });
+
+  it('canAddOptions stays true for an admin on a locked poll', async () => {
+    const repo = new FakePollRepository({ allowMemberOptions: false });
+
+    expect((await viewOf(repo, actor('a', 'ADMIN'))).canAddOptions).toBe(true);
+  });
+
+  it("canClose is true for the poll's author but false for an unrelated member", async () => {
+    const repo = new FakePollRepository();
+
+    expect((await viewOf(repo, actor('owner'))).canClose).toBe(true);
+    expect((await viewOf(repo, actor('someone-else'))).canClose).toBe(false);
+  });
+
+  it('every capability is false once the poll is closed', async () => {
+    const repo = new FakePollRepository({ status: 'CLOSED' });
+    const view = await viewOf(repo, actor('owner', 'ADMIN'));
+
+    expect(view.canVote).toBe(false);
+    expect(view.canAddOptions).toBe(false);
+    expect(view.canClose).toBe(false);
+    expect(view.isAcceptingVotes).toBe(false);
   });
 });
 
